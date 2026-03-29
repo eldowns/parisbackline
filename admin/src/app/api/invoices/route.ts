@@ -5,7 +5,9 @@ import { renderToBuffer } from "@react-pdf/renderer";
 import { InvoicePDF } from "@/lib/invoice-pdf";
 import React from "react";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY);
+}
 
 function formatDateUTC(d: Date) {
   return new Date(d).toLocaleDateString("en-US", {
@@ -90,7 +92,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No recipient email provided" }, { status: 400 });
     }
 
-    const { error } = await resend.emails.send({
+    const { error } = await getResend().emails.send({
       from: "Paris Backline <accounting@parisbackline.com>",
       replyTo: "parisbackline@gmail.com",
       to: emailTo,
