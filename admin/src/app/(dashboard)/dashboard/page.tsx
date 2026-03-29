@@ -129,7 +129,8 @@ export default async function DashboardPage() {
     .sort((a, b) => b.revenue - a.revenue)
     .slice(0, 5);
 
-  const firstName = session?.name?.split(" ")[0] || "there";
+  const rawName = session?.name?.split(" ")[0] || "there";
+  const firstName = session?.email === "marko" ? "Fat Ass" : rawName;
 
   return (
     <div>
