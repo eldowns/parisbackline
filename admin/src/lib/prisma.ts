@@ -12,7 +12,7 @@ function createPrismaClient() {
     const libsql = createClient({ url, authToken });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const adapter = new PrismaLibSql(libsql as any);
-    return new PrismaClient({ adapter, datasourceUrl: url } as never);
+    return new PrismaClient({ adapter } as never);
   }
 
   return new PrismaClient();
