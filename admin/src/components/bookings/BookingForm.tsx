@@ -12,6 +12,8 @@ interface Client {
 
 interface EquipmentItem {
   id: string;
+  manufacturer: string | null;
+  model: string | null;
   name: string;
   category: string;
   owner: string;
@@ -43,7 +45,7 @@ interface BookingData {
   invoicePaid: boolean;
   notes: string;
   status: string;
-  equipment: { equipmentId: string; quantity: number }[];
+  equipment: { equipmentId: string; quantity: number; rentalPrice: number }[];
   subRentals: SubRentalEntry[];
 }
 
@@ -93,22 +95,25 @@ export default function BookingForm({
   }
 
   // Equipment selection
-  function toggleEquipment(eqId: string) {
-    const exists = form.equipment.find((e) => e.equipmentId === eqId);
-    if (exists) {
-      update({ equipment: form.equipment.filter((e) => e.equipmentId !== eqId) });
-    } else {
-      update({ equipment: [...form.equipment, { equipmentId: eqId, quantity: 1 }] });
-    }
+  function addEquipment(eqId: string) {
+    if (form.equipment.find((e) => e.equipmentId === eqId)) return;
+    update({ equipment: [...form.equipment, { equipmentId: eqId, quantity: 1, rentalPrice: 0 }] });
   }
 
-  function updateQuantity(eqId: string, quantity: number) {
+  function removeEquipment(eqId: string) {
+    update({ equipment: form.equipment.filter((e) => e.equipmentId !== eqId) });
+  }
+
+  function updateEquipmentField(eqId: string, fields: Partial<{ quantity: number; rentalPrice: number }>) {
     update({
       equipment: form.equipment.map((e) =>
-        e.equipmentId === eqId ? { ...e, quantity } : e
+        e.equipmentId === eqId ? { ...e, ...fields } : e
       ),
     });
   }
+
+  // Auto-sum rental fee from line items
+  const equipmentTotal = form.equipment.reduce((sum, e) => sum + e.rentalPrice * e.quantity, 0);
 
   // Sub-rentals
   function addSubRental() {
@@ -126,13 +131,15 @@ export default function BookingForm({
   }
 
   // Calculate payout
+  const effectiveRentalFee = equipmentTotal > 0 ? equipmentTotal : form.rentalFee;
+
   const payout = useMemo(() => {
     const selectedEquip = form.equipment
       .map((fe) => equipment.find((e) => e.id === fe.equipmentId))
       .filter(Boolean) as EquipmentItem[];
 
     return calculatePayout({
-      rentalFee: form.rentalFee,
+      rentalFee: equipmentTotal > 0 ? equipmentTotal : form.rentalFee,
       deliveryFee: form.deliveryFee,
       deliveryBy: form.deliveryBy || null,
       referralFee: form.referralFee,
@@ -146,7 +153,7 @@ export default function BookingForm({
       })),
       subRentals: form.subRentals.filter((s) => s.provider && s.cost > 0),
     });
-  }, [form, equipment]);
+  }, [form, equipment, equipmentTotal]);
 
   async function handleCreateClient() {
     const res = await fetch("/api/clients", {
@@ -175,7 +182,7 @@ export default function BookingForm({
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, rentalFee: effectiveRentalFee }),
       });
 
       if (res.ok) {
@@ -287,11 +294,14 @@ export default function BookingForm({
               <input
                 type="number"
                 step="0.01"
-                value={form.rentalFee || ""}
+                value={equipmentTotal > 0 ? equipmentTotal : (form.rentalFee || "")}
                 onChange={(e) => update({ rentalFee: parseFloat(e.target.value) || 0 })}
                 className={inputClass}
                 required
               />
+              {equipmentTotal > 0 && (
+                <p className="text-text-muted text-xs mt-1">Auto-calculated from equipment</p>
+              )}
             </div>
             <div>
               <label className={labelClass}>Delivery Fee ($)</label>
@@ -369,49 +379,86 @@ export default function BookingForm({
 
         {/* Equipment */}
         <div className={sectionClass}>
-          <h3 className="text-sm font-semibold text-text-primary mb-2">Equipment</h3>
-          <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto">
-            {equipment.map((eq) => {
-              const selected = form.equipment.find((e) => e.equipmentId === eq.id);
-              return (
-                <div
-                  key={eq.id}
-                  onClick={() => toggleEquipment(eq.id)}
-                  className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${
-                    selected
-                      ? "border-accent bg-accent/5"
-                      : "border-border hover:border-border-light"
-                  }`}
-                >
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{eq.name}</p>
-                    <p className="text-xs text-text-muted">
-                      {eq.category} &middot;{" "}
-                      <span className={eq.owner === "eric" ? "text-eric" : eq.owner === "marko" ? "text-marko" : "text-text-secondary"}>
-                        {eq.owner.charAt(0).toUpperCase() + eq.owner.slice(1)}
-                      </span>{" "}
-                      &middot; ${eq.internalValue}
-                    </p>
-                  </div>
-                  {selected && (
-                    <input
-                      type="number"
-                      min={1}
-                      value={selected.quantity}
-                      onClick={(e) => e.stopPropagation()}
-                      onChange={(e) => updateQuantity(eq.id, parseInt(e.target.value) || 1)}
-                      className="w-14 text-center text-sm ml-2"
-                    />
-                  )}
-                </div>
-              );
-            })}
-            {equipment.length === 0 && (
-              <p className="text-text-muted text-sm col-span-2 text-center py-4">
-                No equipment yet. Add some in the Equipment section.
-              </p>
-            )}
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-semibold text-text-primary">Equipment</h3>
+            <p className="text-sm font-semibold text-accent">Total: ${equipmentTotal.toFixed(2)}</p>
           </div>
+
+          {/* Selected items */}
+          {form.equipment.length > 0 && (
+            <div className="space-y-2 mb-4">
+              {form.equipment.map((fe) => {
+                const eq = equipment.find((e) => e.id === fe.equipmentId);
+                if (!eq) return null;
+                const displayName = [eq.manufacturer, eq.model].filter(Boolean).join(" ") || eq.name;
+                return (
+                  <div key={fe.equipmentId} className="flex items-center gap-3 p-3 border border-accent/20 bg-accent/5" style={{ borderRadius: "1px" }}>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{displayName}</p>
+                      <p className="text-xs text-text-muted">
+                        {eq.category} &middot;{" "}
+                        <span className={eq.owner === "eric" ? "text-eric" : "text-marko"}>
+                          {eq.owner.charAt(0).toUpperCase() + eq.owner.slice(1)}
+                        </span>
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div>
+                        <label className="block text-text-muted text-[0.6rem] uppercase tracking-wider mb-0.5">Qty</label>
+                        <input
+                          type="number"
+                          min={1}
+                          value={fe.quantity}
+                          onChange={(e) => updateEquipmentField(fe.equipmentId, { quantity: parseInt(e.target.value) || 1 })}
+                          className="w-14 text-center text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-text-muted text-[0.6rem] uppercase tracking-wider mb-0.5">Price ($)</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={fe.rentalPrice || ""}
+                          onChange={(e) => updateEquipmentField(fe.equipmentId, { rentalPrice: parseFloat(e.target.value) || 0 })}
+                          className="w-24 text-sm"
+                          placeholder="0.00"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeEquipment(fe.equipmentId)}
+                        className="text-danger/60 hover:text-danger text-xs mt-4 cursor-pointer"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Add from inventory */}
+          <select
+            onChange={(e) => { if (e.target.value) { addEquipment(e.target.value); e.target.value = ""; } }}
+            className="w-full"
+            defaultValue=""
+          >
+            <option value="">+ Add equipment from inventory...</option>
+            {equipment
+              .filter((eq) => !form.equipment.find((fe) => fe.equipmentId === eq.id))
+              .map((eq) => (
+                <option key={eq.id} value={eq.id}>
+                  {[eq.manufacturer, eq.model].filter(Boolean).join(" ") || eq.name} — {eq.category} ({eq.owner})
+                </option>
+              ))}
+          </select>
+
+          {equipment.length === 0 && (
+            <p className="text-text-muted text-sm text-center py-4">
+              No equipment yet. Add some in the Equipment section.
+            </p>
+          )}
         </div>
 
         {/* Sub-Rentals */}

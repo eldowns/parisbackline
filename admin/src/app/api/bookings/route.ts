@@ -43,9 +43,10 @@ export async function POST(request: NextRequest) {
         notes: body.notes || null,
         status: body.status || "confirmed",
         equipment: {
-          create: (body.equipment || []).map((e: { equipmentId: string; quantity: number }) => ({
+          create: (body.equipment || []).map((e: { equipmentId: string; quantity: number; rentalPrice: number }) => ({
             equipmentId: e.equipmentId,
             quantity: e.quantity || 1,
+            rentalPrice: e.rentalPrice || 0,
           })),
         },
         subRentals: {

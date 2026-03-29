@@ -76,6 +76,7 @@ model BookingEquipment {
   equipmentId String
   equipment   Equipment @relation(fields: [equipmentId], references: [id])
   quantity    Int       @default(1)
+  rentalPrice Float     @default(0)
 }
 
 model SubRental {

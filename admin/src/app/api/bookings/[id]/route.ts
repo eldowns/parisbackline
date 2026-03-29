@@ -40,9 +40,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       notes: body.notes,
       status: body.status,
       equipment: {
-        create: (body.equipment || []).map((e: { equipmentId: string; quantity: number }) => ({
+        create: (body.equipment || []).map((e: { equipmentId: string; quantity: number; rentalPrice: number }) => ({
           equipmentId: e.equipmentId,
           quantity: e.quantity || 1,
+          rentalPrice: e.rentalPrice || 0,
         })),
       },
       subRentals: {

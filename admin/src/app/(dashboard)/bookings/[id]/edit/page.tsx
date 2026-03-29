@@ -40,6 +40,7 @@ export default async function EditBookingPage({ params }: { params: Promise<{ id
     equipment: booking.equipment.map((be) => ({
       equipmentId: be.equipmentId,
       quantity: be.quantity,
+      rentalPrice: be.rentalPrice,
     })),
     subRentals: booking.subRentals.map((sr) => ({
       provider: sr.provider,
