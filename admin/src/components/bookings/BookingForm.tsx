@@ -212,8 +212,8 @@ export default function BookingForm({
   const sectionClass = "bg-bg-secondary border border-border rounded-none p-5 space-y-4";
 
   return (
-    <form onSubmit={handleSubmit} className="grid grid-cols-3 gap-6">
-      <div className="col-span-2 space-y-6">
+    <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="lg:col-span-2 space-y-6">
         {formError && (
           <div className="border border-danger/30 text-danger text-sm p-4" style={{ borderRadius: "1px", background: "rgba(239,68,68,0.05)" }}>
             {formError}
@@ -525,7 +525,7 @@ export default function BookingForm({
       </div>
 
       {/* Right sidebar — live payout breakdown */}
-      <div className="col-span-1">
+      <div className="lg:col-span-1">
         <div className="sticky top-8">
           <PayoutBreakdown payout={payout} rentalFee={effectiveRentalFee} deliveryFee={form.deliveryFee} />
         </div>

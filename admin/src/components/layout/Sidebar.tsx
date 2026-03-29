@@ -11,7 +11,7 @@ const nav = [
   { href: "/clients", label: "CLIENTS", icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ onClose }: { onClose?: () => void }) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -21,13 +21,26 @@ export default function Sidebar() {
     router.refresh();
   }
 
+  function handleNav() {
+    onClose?.();
+  }
+
   return (
     <aside className="w-60 border-r border-border min-h-screen flex flex-col sidebar-bg">
-      <div className="p-6 border-b border-border">
-        <h1 className="text-xl tracking-widest" style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.14em" }}>
-          PARIS <span className="text-accent">BACKLINE</span>
-        </h1>
-        <p className="text-text-muted text-[0.6rem] uppercase tracking-[0.28em] mt-1">Management System</p>
+      <div className="p-6 border-b border-border flex items-center justify-between">
+        <div>
+          <h1 className="text-xl tracking-widest" style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.14em" }}>
+            PARIS <span className="text-accent">BACKLINE</span>
+          </h1>
+          <p className="text-text-muted text-[0.6rem] uppercase tracking-[0.28em] mt-1">Management System</p>
+        </div>
+        {onClose && (
+          <button onClick={onClose} className="lg:hidden text-text-muted hover:text-text-primary cursor-pointer">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
       </div>
 
       <nav className="flex-1 p-4 space-y-0.5">
@@ -37,6 +50,7 @@ export default function Sidebar() {
             <Link
               key={href}
               href={href}
+              onClick={handleNav}
               className={`flex items-center gap-3 px-3 py-2.5 text-xs tracking-[0.18em] transition-colors ${
                 active
                   ? "text-accent border-l-2 border-accent"

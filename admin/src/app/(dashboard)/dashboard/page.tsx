@@ -127,7 +127,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Revenue Cards */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-bg-secondary border border-border p-5 dash-card">
           <p className="text-text-muted text-[0.65rem] font-semibold uppercase tracking-[0.18em] mb-1">Month to Date</p>
           <p className="text-2xl font-bold text-accent" style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.02em" }}>
@@ -161,7 +161,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-6 gap-3 mb-6">
+      <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mb-6">
         <div className="bg-bg-secondary border border-border p-4 text-center dash-card">
           <p className="text-text-muted text-[0.6rem] uppercase tracking-wider mb-1">Active</p>
           <p className="text-xl font-bold text-eric" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>{activeBookings}</p>
@@ -189,7 +189,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* MTD vs YTD Breakdown */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div className="bg-bg-secondary border border-border p-5 dash-card">
           <p className="text-text-muted text-[0.65rem] font-semibold uppercase tracking-[0.18em] mb-3">MTD Breakdown</p>
           <div className="space-y-2 text-sm">
@@ -226,7 +226,7 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Recent Bookings */}
         <div className="bg-bg-secondary border border-border dash-card">
           <div className="px-5 py-4 border-b border-border flex items-center justify-between">
