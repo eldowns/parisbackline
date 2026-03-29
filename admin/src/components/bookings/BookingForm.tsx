@@ -9,6 +9,7 @@ import SendInvoiceButton from "./SendInvoiceButton";
 interface Client {
   id: string;
   name: string;
+  company?: string | null;
   email?: string | null;
 }
 
@@ -237,7 +238,7 @@ export default function BookingForm({
                 >
                   <option value="">Select client...</option>
                   {clients.map((c) => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
+                    <option key={c.id} value={c.id}>{c.company || c.name}{c.company ? ` (${c.name})` : ""}</option>
                   ))}
                 </select>
                 <button
@@ -264,10 +265,10 @@ export default function BookingForm({
             <div className="bg-bg-tertiary border border-border p-4 space-y-3" style={{ borderRadius: "1px" }}>
               <p className="text-xs font-semibold text-text-secondary uppercase">Quick Add Client</p>
               <div className="grid grid-cols-2 gap-3">
-                <input placeholder="Name *" value={newClient.name} onChange={(e) => setNewClient({ ...newClient, name: e.target.value })} required />
+                <input placeholder="Client Name" value={newClient.company} onChange={(e) => setNewClient({ ...newClient, company: e.target.value })} />
+                <input placeholder="Contact *" value={newClient.name} onChange={(e) => setNewClient({ ...newClient, name: e.target.value })} required />
                 <input placeholder="Email" value={newClient.email} onChange={(e) => setNewClient({ ...newClient, email: e.target.value })} />
                 <input placeholder="Phone" value={newClient.phone} onChange={(e) => setNewClient({ ...newClient, phone: e.target.value })} />
-                <input placeholder="Company" value={newClient.company} onChange={(e) => setNewClient({ ...newClient, company: e.target.value })} />
               </div>
               <button type="button" onClick={handleCreateClient} className="bg-accent text-bg-primary text-xs font-medium px-3 py-1.5 cursor-pointer" style={{ borderRadius: "1px" }}>
                 Add Client

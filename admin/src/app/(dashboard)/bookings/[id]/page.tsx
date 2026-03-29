@@ -46,8 +46,9 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
           <Link href="/bookings" className="text-text-muted text-xs hover:text-accent transition-colors">
             &larr; Back to Bookings
           </Link>
-          <h1 className="text-2xl font-bold mt-1">{booking.client.name}</h1>
-          <p className="text-text-secondary text-sm">
+          <h1 className="text-2xl font-bold mt-1">{booking.client.company || booking.client.name}</h1>
+          {booking.client.company && <p className="text-text-secondary text-sm">{booking.client.name}</p>}
+          <p className="text-text-muted text-sm">
             {format(new Date(booking.dateStart), "MMMM d")} – {format(new Date(booking.dateEnd), "MMMM d, yyyy")}
           </p>
         </div>

@@ -268,8 +268,8 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
         {/* Bill To */}
         <View>
           <Text style={s.sectionTitle}>Bill To</Text>
-          <Text style={s.clientName}>{data.client.name}</Text>
-          {data.client.company && <Text style={s.clientDetail}>{data.client.company}</Text>}
+          <Text style={s.clientName}>{data.client.company || data.client.name}</Text>
+          {data.client.company && <Text style={s.clientDetail}>{data.client.name}</Text>}
           {data.client.email && <Text style={s.clientDetail}>{data.client.email}</Text>}
           {data.client.phone && <Text style={s.clientDetail}>{data.client.phone}</Text>}
         </View>

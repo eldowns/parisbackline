@@ -7,7 +7,7 @@ import { format } from "date-fns";
 interface BookingData {
   id: string;
   clientId: string;
-  client: { name: string };
+  client: { name: string; company: string | null };
   dateStart: string;
   dateEnd: string;
   rentalFee: number;
@@ -87,7 +87,10 @@ function BookingRow({ b }: { b: BookingData }) {
         </div>
 
         <Link href={`/bookings/${b.id}/edit`} className="flex-1 min-w-0 flex items-center gap-6">
-          <span className="font-medium text-sm w-40 truncate">{b.client.name}</span>
+          <span className="w-40 truncate">
+            <span className="font-medium text-sm block">{b.client.company || b.client.name}</span>
+            {b.client.company && <span className="text-text-muted text-xs block">{b.client.name}</span>}
+          </span>
           <span className="text-text-secondary text-sm w-36">
             {formatDate(b.dateStart)} – {formatDate(b.dateEnd)}
           </span>

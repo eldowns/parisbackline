@@ -149,6 +149,7 @@ export default function SendInvoiceModal({ bookingId, clientName, clientEmail, o
                 {/* Email body preview */}
                 <div className="space-y-3 pt-2">
                   <p className="text-sm text-text-secondary">Hi {d.client.name},</p>
+                  {d.client.company && <p className="text-xs text-text-muted">Re: {d.client.company}</p>}
                   <p className="text-sm text-text-secondary">
                     Please find your invoice attached for the rental period {d.dateStart} – {d.dateEnd}.
                   </p>

@@ -73,12 +73,12 @@ export default function ClientsPage() {
           <h3 className="text-sm font-semibold">{editId ? "Edit Client" : "Add Client"}</h3>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-text-secondary text-xs font-medium mb-1.5 uppercase tracking-wider">Name</label>
-              <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full" required />
+              <label className="block text-text-secondary text-xs font-medium mb-1.5 uppercase tracking-wider">Client Name</label>
+              <input value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} className="w-full" placeholder="Company or project name" />
             </div>
             <div>
-              <label className="block text-text-secondary text-xs font-medium mb-1.5 uppercase tracking-wider">Company</label>
-              <input value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} className="w-full" />
+              <label className="block text-text-secondary text-xs font-medium mb-1.5 uppercase tracking-wider">Contact</label>
+              <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full" required placeholder="Contact person" />
             </div>
             <div>
               <label className="block text-text-secondary text-xs font-medium mb-1.5 uppercase tracking-wider">Email</label>
@@ -106,9 +106,9 @@ export default function ClientsPage() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border text-text-muted text-xs uppercase tracking-wider">
-              <th className="text-left px-5 py-3 font-medium">Name</th>
-              <th className="text-left px-5 py-3 font-medium">Company</th>
+              <th className="text-left px-5 py-3 font-medium">Client</th>
               <th className="text-left px-5 py-3 font-medium">Contact</th>
+              <th className="text-left px-5 py-3 font-medium">Info</th>
               <th className="text-right px-5 py-3 font-medium">Bookings</th>
               <th className="text-right px-5 py-3 font-medium">Revenue</th>
               <th className="text-right px-5 py-3 font-medium">Actions</th>
@@ -119,8 +119,8 @@ export default function ClientsPage() {
               const revenue = c.bookings.filter((b) => b.status !== "cancelled").reduce((sum, b) => sum + b.rentalFee, 0);
               return (
                 <tr key={c.id} className="hover:bg-bg-hover transition-colors cursor-pointer" onClick={() => startEdit(c)}>
-                  <td className="px-5 py-3 font-medium">{c.name}</td>
-                  <td className="px-5 py-3 text-text-secondary">{c.company || "—"}</td>
+                  <td className="px-5 py-3 font-medium">{c.company || c.name}</td>
+                  <td className="px-5 py-3 text-text-secondary">{c.company ? c.name : "—"}</td>
                   <td className="px-5 py-3 text-text-secondary text-xs">
                     {c.email && <span className="block">{c.email}</span>}
                     {c.phone && <span className="block">{c.phone}</span>}

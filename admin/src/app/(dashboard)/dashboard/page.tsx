@@ -121,7 +121,8 @@ export default async function DashboardPage() {
 
   const clientRevenue = topClients
     .map((c) => ({
-      name: c.name,
+      displayName: c.company || c.name,
+      contact: c.company ? c.name : null,
       revenue: c.bookings.reduce((s, b) => s + b.rentalFee + b.deliveryFee, 0),
       count: c.bookings.length,
     }))
@@ -240,7 +241,8 @@ export default async function DashboardPage() {
                 className="flex items-center justify-between px-5 py-3"
               >
                 <div>
-                  <p className="text-sm font-medium">{b.client.name}</p>
+                  <p className="text-sm font-medium">{b.client.company || b.client.name}</p>
+                  {b.client.company && <p className="text-text-muted text-xs">{b.client.name}</p>}
                   <p className="text-text-muted text-xs">
                     {format(formatDate(new Date(b.dateStart)), "MMM d")} – {format(formatDate(new Date(b.dateEnd)), "MMM d")}
                   </p>
@@ -267,7 +269,8 @@ export default async function DashboardPage() {
                 className="flex items-center justify-between px-5 py-3"
               >
                 <div>
-                  <p className="text-sm font-medium">{b.client.name}</p>
+                  <p className="text-sm font-medium">{b.client.company || b.client.name}</p>
+                  {b.client.company && <p className="text-text-muted text-xs">{b.client.name}</p>}
                   <p className="text-text-muted text-xs">
                     {format(formatDate(new Date(b.dateStart)), "MMM d")}
                   </p>
@@ -293,12 +296,12 @@ export default async function DashboardPage() {
               <p className="text-text-muted text-sm p-5">No clients yet</p>
             )}
             {clientRevenue.map((c, i) => (
-              <div key={c.name} className="flex items-center justify-between px-5 py-3">
+              <div key={c.displayName} className="flex items-center justify-between px-5 py-3">
                 <div className="flex items-center gap-3">
                   <span className="text-text-muted text-xs font-mono w-4">{i + 1}</span>
                   <div>
-                    <p className="text-sm font-medium">{c.name}</p>
-                    <p className="text-text-muted text-xs">{c.count} booking{c.count !== 1 ? "s" : ""}</p>
+                    <p className="text-sm font-medium">{c.displayName}</p>
+                    <p className="text-text-muted text-xs">{c.contact ? `${c.contact} · ` : ""}{c.count} booking{c.count !== 1 ? "s" : ""}</p>
                   </div>
                 </div>
                 <p className="text-sm font-semibold">${c.revenue.toLocaleString()}</p>

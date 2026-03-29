@@ -23,7 +23,7 @@ interface BookingCal {
   rentalFee: number;
   status: string;
   leadPartner: string;
-  client: { name: string };
+  client: { name: string; company: string | null };
 }
 
 export default function CalendarPage() {
@@ -138,7 +138,7 @@ export default function CalendarPage() {
                           : "bg-marko/10 text-marko hover:bg-marko/20"
                       }`}
                     >
-                      {b.client.name}
+                      {b.client.company || b.client.name}
                     </Link>
                   ))}
                   {dayBookings.length > 3 && (

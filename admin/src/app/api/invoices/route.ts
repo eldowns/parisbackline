@@ -99,6 +99,7 @@ export async function POST(request: NextRequest) {
         <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #09090f;">Invoice from Paris Backline</h2>
           <p>Hi ${booking.client.name},</p>
+          ${booking.client.company ? `<p style="color: #666; font-size: 14px;">Re: ${booking.client.company}</p>` : ""}
           <p>Please find your invoice attached for the rental period ${invoiceData.dateStart} – ${invoiceData.dateEnd}.</p>
           <p style="font-size: 24px; font-weight: bold; color: #c8a44a;">Total Due: $${grandTotal.toFixed(2)}</p>
           <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
