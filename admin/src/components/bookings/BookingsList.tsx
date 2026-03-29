@@ -94,7 +94,7 @@ function BookingRow({ b }: { b: BookingData }) {
           <span className="text-text-secondary text-sm w-36">
             {formatDate(b.dateStart)} – {formatDate(b.dateEnd)}
           </span>
-          <span className="text-sm font-semibold w-24 text-right">${b.rentalFee.toLocaleString()}</span>
+          <span className="text-sm font-semibold w-24 text-right">${(b.rentalFee + b.deliveryFee).toLocaleString()}</span>
           <span className={`text-xs font-medium uppercase tracking-wider ${statusColor}`}>
             {displayStatus}
           </span>

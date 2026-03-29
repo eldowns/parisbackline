@@ -10,7 +10,7 @@ interface ClientData {
   phone: string | null;
   company: string | null;
   notes: string | null;
-  bookings: { id: string; rentalFee: number; status: string }[];
+  bookings: { id: string; rentalFee: number; deliveryFee: number; status: string }[];
 }
 
 export default function ClientsPage() {
@@ -116,7 +116,7 @@ export default function ClientsPage() {
           </thead>
           <tbody className="divide-y divide-border">
             {clients.map((c) => {
-              const revenue = c.bookings.filter((b) => b.status !== "cancelled").reduce((sum, b) => sum + b.rentalFee, 0);
+              const revenue = c.bookings.filter((b) => b.status !== "cancelled").reduce((sum, b) => sum + b.rentalFee + b.deliveryFee, 0);
               return (
                 <tr key={c.id} className="hover:bg-bg-hover transition-colors cursor-pointer" onClick={() => startEdit(c)}>
                   <td className="px-5 py-3 font-medium">{c.company || c.name}</td>
