@@ -13,6 +13,8 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
   const equipment = await prisma.equipment.create({
     data: {
+      manufacturer: body.manufacturer,
+      model: body.model,
       name: body.name,
       category: body.category,
       owner: body.owner,

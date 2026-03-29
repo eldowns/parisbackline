@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 
 interface EquipmentItem {
   id: string;
+  manufacturer: string | null;
+  model: string | null;
   name: string;
   category: string;
   owner: string;
@@ -19,7 +21,7 @@ export default function EquipmentPage() {
   const [equipment, setEquipment] = useState<EquipmentItem[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: "", category: "Wireless Mic", owner: "eric", internalValue: 0, serialNumber: "", notes: "" });
+  const [form, setForm] = useState({ manufacturer: "", model: "", name: "", category: "Wireless Mic", owner: "eric", internalValue: 0, serialNumber: "", notes: "" });
   const [filter, setFilter] = useState("");
 
   useEffect(() => {
@@ -27,13 +29,13 @@ export default function EquipmentPage() {
   }, []);
 
   function resetForm() {
-    setForm({ name: "", category: "Wireless Mic", owner: "eric", internalValue: 0, serialNumber: "", notes: "" });
+    setForm({ manufacturer: "", model: "", name: "", category: "Wireless Mic", owner: "eric", internalValue: 0, serialNumber: "", notes: "" });
     setEditId(null);
     setShowForm(false);
   }
 
   function startEdit(eq: EquipmentItem) {
-    setForm({ name: eq.name, category: eq.category, owner: eq.owner, internalValue: eq.internalValue, serialNumber: eq.serialNumber || "", notes: eq.notes || "" });
+    setForm({ manufacturer: eq.manufacturer || "", model: eq.model || "", name: eq.name, category: eq.category, owner: eq.owner, internalValue: eq.internalValue, serialNumber: eq.serialNumber || "", notes: eq.notes || "" });
     setEditId(eq.id);
     setShowForm(true);
   }
@@ -98,10 +100,18 @@ export default function EquipmentPage() {
       {showForm && (
         <form onSubmit={handleSubmit} className="bg-bg-secondary border border-border rounded-xl p-5 mb-6 space-y-4">
           <h3 className="text-sm font-semibold">{editId ? "Edit Equipment" : "Add Equipment"}</h3>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-4 gap-4">
+            <div>
+              <label className="block text-text-secondary text-xs font-medium mb-1.5 uppercase tracking-wider">Manufacturer</label>
+              <input value={form.manufacturer} onChange={(e) => setForm({ ...form, manufacturer: e.target.value })} className="w-full" placeholder="e.g., Sennheiser" />
+            </div>
+            <div>
+              <label className="block text-text-secondary text-xs font-medium mb-1.5 uppercase tracking-wider">Model</label>
+              <input value={form.model} onChange={(e) => setForm({ ...form, model: e.target.value })} className="w-full" placeholder="e.g., EW-DX" />
+            </div>
             <div>
               <label className="block text-text-secondary text-xs font-medium mb-1.5 uppercase tracking-wider">Name</label>
-              <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full" required placeholder="e.g., Sennheiser EW-DX" />
+              <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full" required placeholder="Display name" />
             </div>
             <div>
               <label className="block text-text-secondary text-xs font-medium mb-1.5 uppercase tracking-wider">Category</label>
@@ -144,6 +154,8 @@ export default function EquipmentPage() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border text-text-muted text-xs uppercase tracking-wider">
+              <th className="text-left px-5 py-3 font-medium">Manufacturer</th>
+              <th className="text-left px-5 py-3 font-medium">Model</th>
               <th className="text-left px-5 py-3 font-medium">Name</th>
               <th className="text-left px-5 py-3 font-medium">Category</th>
               <th className="text-left px-5 py-3 font-medium">Owner</th>
@@ -155,6 +167,8 @@ export default function EquipmentPage() {
           <tbody className="divide-y divide-border">
             {filtered.map((eq) => (
               <tr key={eq.id} className="hover:bg-bg-hover transition-colors">
+                <td className="px-5 py-3 text-text-secondary">{eq.manufacturer || "—"}</td>
+                <td className="px-5 py-3 text-text-secondary">{eq.model || "—"}</td>
                 <td className="px-5 py-3 font-medium">{eq.name}</td>
                 <td className="px-5 py-3 text-text-secondary">{eq.category}</td>
                 <td className="px-5 py-3">
@@ -175,7 +189,7 @@ export default function EquipmentPage() {
               </tr>
             ))}
             {filtered.length === 0 && (
-              <tr><td colSpan={6} className="px-5 py-12 text-center text-text-muted">No equipment found</td></tr>
+              <tr><td colSpan={8} className="px-5 py-12 text-center text-text-muted">No equipment found</td></tr>
             )}
           </tbody>
         </table>

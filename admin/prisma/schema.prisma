@@ -29,6 +29,8 @@ model Client {
 
 model Equipment {
   id            String             @id @default(cuid())
+  manufacturer  String?
+  model         String?
   name          String
   category      String
   owner         String

@@ -14,6 +14,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   const equipment = await prisma.equipment.update({
     where: { id },
     data: {
+      manufacturer: body.manufacturer,
+      model: body.model,
       name: body.name,
       category: body.category,
       owner: body.owner,
