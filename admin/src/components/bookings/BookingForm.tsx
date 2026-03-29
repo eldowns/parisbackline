@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { calculatePayout } from "@/lib/revenue";
 import PayoutBreakdown from "./PayoutBreakdown";
@@ -118,6 +118,22 @@ export default function BookingForm({
   }
 
   const equipmentTotal = form.equipment.reduce((sum, e) => sum + e.rentalPrice * e.quantity, 0);
+
+  // Equipment availability check
+  const [conflicts, setConflicts] = useState<Record<string, { totalBooked: number; bookings: { client: string }[] }>>({});
+
+  useEffect(() => {
+    if (!form.dateStart || !form.dateEnd || form.equipment.length === 0) {
+      setConflicts({});
+      return;
+    }
+    const params = new URLSearchParams({ dateStart: form.dateStart, dateEnd: form.dateEnd });
+    if (initialData?.id) params.set("excludeBookingId", initialData.id);
+    fetch(`/api/equipment/availability?${params}`)
+      .then((r) => r.json())
+      .then(setConflicts)
+      .catch(() => {});
+  }, [form.dateStart, form.dateEnd, form.equipment.length, initialData?.id]);
 
   // Sub-rentals
   function addSubRental() {
@@ -329,6 +345,11 @@ export default function BookingForm({
                           {eq.owner.charAt(0).toUpperCase() + eq.owner.slice(1)}
                         </span>
                       </p>
+                      {conflicts[fe.equipmentId] && (
+                        <p className="text-xs text-warning mt-0.5">
+                          ⚠ Booked by {conflicts[fe.equipmentId].bookings.map((c) => c.client).join(", ")} for these dates
+                        </p>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       <div>

@@ -20,6 +20,7 @@ const categories = ["Wireless Mic", "IEM", "Console", "Keyboard/Piano", "DI/Spli
 
 export default function EquipmentPage() {
   const [equipment, setEquipment] = useState<EquipmentItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState({ manufacturer: "", model: "", category: "Wireless Mic", owner: "eric", quantity: 1, internalValue: 0, serialNumber: "", notes: "" });
@@ -27,7 +28,7 @@ export default function EquipmentPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetch("/api/equipment").then((r) => r.json()).then(setEquipment);
+    fetch("/api/equipment").then((r) => r.json()).then((data) => { setEquipment(data); setLoading(false); });
   }, []);
 
   function resetForm() {
@@ -205,7 +206,17 @@ export default function EquipmentPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {filtered.map((eq) => (
+            {loading && [...Array(6)].map((_, i) => (
+              <tr key={`skel-${i}`} className="animate-pulse">
+                <td className="px-5 py-3"><div className="h-4 bg-white/5 rounded w-32" /></td>
+                <td className="px-5 py-3"><div className="h-4 bg-white/5 rounded w-20" /></td>
+                <td className="px-5 py-3"><div className="h-4 bg-white/5 rounded w-14" /></td>
+                <td className="px-5 py-3"><div className="h-4 bg-white/5 rounded w-6 mx-auto" /></td>
+                <td className="px-5 py-3 hidden md:table-cell"><div className="h-4 bg-white/5 rounded w-16 ml-auto" /></td>
+                <td className="px-5 py-3 hidden md:table-cell"><div className="h-4 bg-white/5 rounded w-24 ml-auto" /></td>
+              </tr>
+            ))}
+            {!loading && filtered.map((eq) => (
               <tr key={eq.id} className="hover:bg-bg-hover transition-colors cursor-pointer" onClick={() => startEdit(eq)}>
                 <td className="px-5 py-3">
                   <span className="font-medium">{[eq.manufacturer, eq.model].filter(Boolean).join(" ") || eq.name}</span>
@@ -228,7 +239,7 @@ export default function EquipmentPage() {
                 </td>
               </tr>
             ))}
-            {filtered.length === 0 && (
+            {!loading && filtered.length === 0 && (
               <tr><td colSpan={6} className="px-5 py-12 text-center text-text-muted">No equipment found</td></tr>
             )}
           </tbody>

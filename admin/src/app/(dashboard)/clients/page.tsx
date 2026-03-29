@@ -15,12 +15,13 @@ interface ClientData {
 
 export default function ClientsPage() {
   const [clients, setClients] = useState<ClientData[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState({ name: "", email: "", phone: "", company: "", notes: "" });
 
   useEffect(() => {
-    fetch("/api/clients").then((r) => r.json()).then(setClients);
+    fetch("/api/clients").then((r) => r.json()).then((data) => { setClients(data); setLoading(false); });
   }, []);
 
   function resetForm() {
@@ -115,7 +116,20 @@ export default function ClientsPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {clients.map((c) => {
+            {loading && [...Array(5)].map((_, i) => (
+              <tr key={`skel-${i}`} className="animate-pulse">
+                <td className="px-5 py-3"><div className="h-4 bg-white/5 rounded w-28" /></td>
+                <td className="px-5 py-3"><div className="h-4 bg-white/5 rounded w-24" /></td>
+                <td className="px-5 py-3 hidden md:table-cell">
+                  <div className="h-3 bg-white/5 rounded w-36 mb-1" />
+                  <div className="h-3 bg-white/5 rounded w-24" />
+                </td>
+                <td className="px-5 py-3"><div className="h-4 bg-white/5 rounded w-6 ml-auto" /></td>
+                <td className="px-5 py-3 hidden md:table-cell"><div className="h-4 bg-white/5 rounded w-16 ml-auto" /></td>
+                <td className="px-5 py-3 hidden md:table-cell"><div className="h-4 bg-white/5 rounded w-28 ml-auto" /></td>
+              </tr>
+            ))}
+            {!loading && clients.map((c) => {
               const revenue = c.bookings.filter((b) => b.status !== "cancelled").reduce((sum, b) => sum + b.rentalFee + b.deliveryFee, 0);
               return (
                 <tr key={c.id} className="hover:bg-bg-hover transition-colors cursor-pointer" onClick={() => startEdit(c)}>
@@ -136,7 +150,7 @@ export default function ClientsPage() {
                 </tr>
               );
             })}
-            {clients.length === 0 && (
+            {!loading && clients.length === 0 && (
               <tr><td colSpan={6} className="px-5 py-12 text-center text-text-muted">No clients yet</td></tr>
             )}
           </tbody>

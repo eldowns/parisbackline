@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 
 interface BookingData {
@@ -44,6 +45,7 @@ function formatDate(d: string) {
 }
 
 function BookingRow({ b }: { b: BookingData }) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const innerRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState(0);
@@ -243,6 +245,16 @@ function BookingRow({ b }: { b: BookingData }) {
               <p className="text-text-secondary text-sm">{b.notes}</p>
             </div>
           )}
+
+          <div className="pt-2">
+            <button
+              onClick={() => router.push(`/bookings/new?duplicate=${b.id}`)}
+              className="border border-border text-text-secondary hover:text-text-primary hover:bg-bg-hover text-xs font-medium px-4 py-2 transition-colors cursor-pointer"
+              style={{ borderRadius: "1px" }}
+            >
+              Duplicate
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -250,12 +262,27 @@ function BookingRow({ b }: { b: BookingData }) {
 }
 
 export default function BookingsList({ bookings }: { bookings: BookingData[] | null }) {
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [invoiceFilter, setInvoiceFilter] = useState("");
+
+  const filtered = bookings?.filter((b) => {
+    const q = search.toLowerCase();
+    const matchesSearch = !q || (b.client.company || b.client.name).toLowerCase().includes(q) || b.client.name.toLowerCase().includes(q);
+    const matchesStatus = !statusFilter || b.status === statusFilter;
+    const matchesInvoice = !invoiceFilter ||
+      (invoiceFilter === "paid" && b.invoicePaid) ||
+      (invoiceFilter === "sent" && b.invoiceSent && !b.invoicePaid) ||
+      (invoiceFilter === "unsent" && !b.invoiceSent);
+    return matchesSearch && matchesStatus && matchesInvoice;
+  });
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold">Bookings</h1>
-          <p className="text-text-secondary text-sm mt-1">{bookings ? `${bookings.length} total` : "Loading..."}</p>
+          <p className="text-text-secondary text-sm mt-1">{bookings ? `${filtered?.length} of ${bookings.length}` : "Loading..."}</p>
         </div>
         <Link
           href="/bookings/new"
@@ -264,6 +291,29 @@ export default function BookingsList({ bookings }: { bookings: BookingData[] | n
         >
           + New Booking
         </Link>
+      </div>
+
+      {/* Search & Filters */}
+      <div className="flex flex-col md:flex-row gap-3 mb-4">
+        <input
+          type="text"
+          placeholder="Search clients..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="flex-1 md:max-w-xs"
+        />
+        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="w-full md:w-auto">
+          <option value="">All Statuses</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+        <select value={invoiceFilter} onChange={(e) => setInvoiceFilter(e.target.value)} className="w-full md:w-auto">
+          <option value="">All Invoices</option>
+          <option value="paid">Paid</option>
+          <option value="sent">Sent, Unpaid</option>
+          <option value="unsent">Not Sent</option>
+        </select>
       </div>
 
       <div className="bg-bg-secondary border border-border" style={{ borderRadius: "1px" }}>
@@ -278,13 +328,38 @@ export default function BookingsList({ bookings }: { bookings: BookingData[] | n
           </div>
         </div>
         {bookings === null && (
-          <div className="px-5 py-4 text-center text-text-muted text-sm animate-pulse">Loading bookings...</div>
+          <div className="divide-y divide-border">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="hidden md:flex items-center px-5 py-4 gap-6 animate-pulse">
+                <div className="w-4 h-4 bg-white/5 rounded mr-3 shrink-0" />
+                <div className="w-40">
+                  <div className="h-4 bg-white/5 rounded w-28 mb-1.5" />
+                  <div className="h-3 bg-white/5 rounded w-20" />
+                </div>
+                <div className="h-4 bg-white/5 rounded w-36" />
+                <div className="h-4 bg-white/5 rounded w-20 ml-auto" />
+                <div className="h-3 bg-white/5 rounded w-16" />
+                <div className="h-3 bg-white/5 rounded w-24" />
+              </div>
+            ))}
+            {[...Array(4)].map((_, i) => (
+              <div key={`m${i}`} className="md:hidden px-4 py-3 animate-pulse">
+                <div className="h-4 bg-white/5 rounded w-32 mb-2" />
+                <div className="flex gap-2">
+                  <div className="h-3 bg-white/5 rounded w-28" />
+                  <div className="h-3 bg-white/5 rounded w-16" />
+                  <div className="h-3 bg-white/5 rounded w-20" />
+                </div>
+                <div className="h-3 bg-white/5 rounded w-24 mt-1.5" />
+              </div>
+            ))}
+          </div>
         )}
-        {bookings?.map((b) => (
+        {filtered?.map((b) => (
           <BookingRow key={b.id} b={b} />
         ))}
-        {bookings && bookings.length === 0 && (
-          <p className="text-text-muted text-sm text-center py-12">No bookings yet. Create your first one!</p>
+        {bookings && filtered?.length === 0 && (
+          <p className="text-text-muted text-sm text-center py-12">{bookings.length === 0 ? "No bookings yet. Create your first one!" : "No bookings match your filters."}</p>
         )}
       </div>
     </div>
