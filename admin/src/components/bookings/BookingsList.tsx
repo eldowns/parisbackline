@@ -73,7 +73,7 @@ function BookingRow({ b }: { b: BookingData }) {
   return (
     <div className="border-b border-border">
       {/* Summary row */}
-      <div className="flex items-center px-5 py-4 hover:bg-bg-hover active:bg-transparent transition-colors cursor-pointer">
+      <div className="flex items-center px-5 py-4 hover:bg-bg-hover active:opacity-60 transition-all duration-150 cursor-pointer">
         <div
           className="mr-3 text-text-muted hover:text-text-primary"
           onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
