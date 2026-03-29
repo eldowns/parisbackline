@@ -133,7 +133,6 @@ export default async function DashboardPage() {
 
   return (
     <div>
-      <Greeting name={firstName} />
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl" style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.06em" }}>
@@ -143,6 +142,7 @@ export default async function DashboardPage() {
             {format(now, "MMMM yyyy")}
           </p>
         </div>
+        <Greeting name={firstName} />
         <Link
           href="/bookings/new"
           className="bg-accent hover:brightness-110 text-bg-primary text-sm font-medium px-4 py-2.5 transition-colors"
