@@ -108,10 +108,10 @@ export default function ClientsPage() {
             <tr className="border-b border-border text-text-muted text-xs uppercase tracking-wider">
               <th className="text-left px-5 py-3 font-medium">Client</th>
               <th className="text-left px-5 py-3 font-medium">Contact</th>
-              <th className="text-left px-5 py-3 font-medium">Info</th>
+              <th className="text-left px-5 py-3 font-medium hidden md:table-cell">Info</th>
               <th className="text-right px-5 py-3 font-medium">Bookings</th>
-              <th className="text-right px-5 py-3 font-medium">Revenue</th>
-              <th className="text-right px-5 py-3 font-medium">Actions</th>
+              <th className="text-right px-5 py-3 font-medium hidden md:table-cell">Revenue</th>
+              <th className="text-right px-5 py-3 font-medium hidden md:table-cell">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -121,14 +121,14 @@ export default function ClientsPage() {
                 <tr key={c.id} className="hover:bg-bg-hover transition-colors cursor-pointer" onClick={() => startEdit(c)}>
                   <td className="px-5 py-3 font-medium">{c.company || c.name}</td>
                   <td className="px-5 py-3 text-text-secondary">{c.company ? c.name : "—"}</td>
-                  <td className="px-5 py-3 text-text-secondary text-xs">
+                  <td className="px-5 py-3 text-text-secondary text-xs hidden md:table-cell">
                     {c.email && <span className="block">{c.email}</span>}
                     {c.phone && <span className="block">{c.phone}</span>}
                     {!c.email && !c.phone && "—"}
                   </td>
                   <td className="px-5 py-3 text-right">{c.bookings.length}</td>
-                  <td className="px-5 py-3 text-right font-semibold">${revenue.toLocaleString()}</td>
-                  <td className="px-5 py-3 text-right">
+                  <td className="px-5 py-3 text-right font-semibold hidden md:table-cell">${revenue.toLocaleString()}</td>
+                  <td className="px-5 py-3 text-right hidden md:table-cell">
                     <button onClick={() => startEdit(c)} className="text-accent hover:text-accent-hover text-xs font-medium mr-3 cursor-pointer">Edit</button>
                     <Link href={`/bookings?clientId=${c.id}`} className="text-text-secondary hover:text-text-primary text-xs font-medium mr-3">Bookings</Link>
                     <button onClick={() => handleDelete(c.id)} className="text-danger/60 hover:text-danger text-xs font-medium cursor-pointer">Delete</button>

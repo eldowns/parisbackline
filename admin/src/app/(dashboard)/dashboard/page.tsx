@@ -135,23 +135,30 @@ export default async function DashboardPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl" style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.06em" }}>
-            DASHBOARD
-          </h1>
-          <p className="text-text-muted text-xs uppercase tracking-[0.2em] mt-1">
-            {format(now, "MMMM yyyy")}
-          </p>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+        <div className="mb-2 md:mb-0 md:hidden text-center">
+          <Greeting name={firstName} />
         </div>
-        <Greeting name={firstName} />
-        <Link
-          href="/bookings/new"
-          className="bg-accent hover:brightness-110 text-bg-primary text-sm font-medium px-4 py-2.5 transition-colors"
-          style={{ borderRadius: "1px" }}
-        >
-          + New Booking
-        </Link>
+        <div className="flex items-center justify-between md:contents">
+          <div>
+            <h1 className="text-3xl" style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.06em" }}>
+              DASHBOARD
+            </h1>
+            <p className="text-text-muted text-xs uppercase tracking-[0.2em] mt-1">
+              {format(now, "MMMM yyyy")}
+            </p>
+          </div>
+          <div className="hidden md:block">
+            <Greeting name={firstName} />
+          </div>
+          <Link
+            href="/bookings/new"
+            className="bg-accent hover:brightness-110 text-bg-primary text-sm font-medium px-4 py-2.5 transition-colors"
+            style={{ borderRadius: "1px" }}
+          >
+            + New Booking
+          </Link>
+        </div>
       </div>
 
       {/* Revenue Cards */}
@@ -196,7 +203,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-6">
         <div className="bg-bg-secondary border border-border p-4 text-center dash-card">
           <p className="text-text-muted text-[0.6rem] uppercase tracking-wider mb-1">Active</p>
           <p className="text-xl font-bold text-eric" style={{ fontFamily: "'Bebas Neue', sans-serif" }}><CountUp value={activeBookings} /></p>

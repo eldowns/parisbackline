@@ -200,8 +200,8 @@ export default function EquipmentPage() {
               <th className="text-left px-5 py-3 font-medium">Category</th>
               <th className="text-left px-5 py-3 font-medium">Owner</th>
               <th className="text-center px-5 py-3 font-medium">Qty</th>
-              <th className="text-right px-5 py-3 font-medium">Value</th>
-              <th className="text-right px-5 py-3 font-medium">Actions</th>
+              <th className="text-right px-5 py-3 font-medium hidden md:table-cell">Value</th>
+              <th className="text-right px-5 py-3 font-medium hidden md:table-cell">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -221,8 +221,8 @@ export default function EquipmentPage() {
                   </span>
                 </td>
                 <td className="px-5 py-3 text-center">{eq.quantity}</td>
-                <td className="px-5 py-3 text-right font-semibold">${eq.internalValue.toLocaleString()}</td>
-                <td className="px-5 py-3 text-right">
+                <td className="px-5 py-3 text-right font-semibold hidden md:table-cell">${eq.internalValue.toLocaleString()}</td>
+                <td className="px-5 py-3 text-right hidden md:table-cell">
                   <button onClick={() => startEdit(eq)} className="text-accent hover:text-accent-hover text-xs font-medium mr-3 cursor-pointer">Edit</button>
                   <button onClick={() => handleDeactivate(eq.id)} className="text-danger/60 hover:text-danger text-xs font-medium cursor-pointer">Remove</button>
                 </td>

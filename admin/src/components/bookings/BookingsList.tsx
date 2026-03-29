@@ -72,8 +72,8 @@ function BookingRow({ b }: { b: BookingData }) {
 
   return (
     <div className="border-b border-border">
-      {/* Summary row */}
-      <div className="flex items-center px-5 py-4 hover:bg-bg-hover active:opacity-60 transition-all duration-150 cursor-pointer">
+      {/* Desktop summary row */}
+      <div className="hidden md:flex items-center px-5 py-4 hover:bg-bg-hover active:opacity-60 transition-all duration-150 cursor-pointer">
         <div
           className="mr-3 text-text-muted hover:text-text-primary"
           onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
@@ -103,6 +103,37 @@ function BookingRow({ b }: { b: BookingData }) {
         <span className={`text-xs ml-4 whitespace-nowrap ${b.invoiceSent ? "text-success" : "text-danger"}`}>
           {b.invoiceSent ? "Invoice sent" : "Invoice not sent"}
         </span>
+      </div>
+
+      {/* Mobile card layout */}
+      <div className="md:hidden px-4 py-3 hover:bg-bg-hover active:opacity-60 transition-all duration-150 cursor-pointer">
+        <div className="flex items-start justify-between">
+          <Link href={`/bookings/${b.id}/edit`} className="flex-1 min-w-0">
+            <p className="font-medium text-sm">{b.client.company || b.client.name}</p>
+            {b.client.company && <p className="text-text-muted text-xs">{b.client.name}</p>}
+            <div className="flex items-center gap-2 mt-1.5 text-xs text-text-secondary">
+              <span>{formatDate(b.dateStart)} – {formatDate(b.dateEnd)}</span>
+              <span className="text-text-muted">|</span>
+              <span className="font-semibold text-text-primary">${(b.rentalFee + b.deliveryFee).toLocaleString()}</span>
+              <span className="text-text-muted">|</span>
+              <span className={`font-medium uppercase tracking-wider ${statusColor}`}>{displayStatus}</span>
+            </div>
+            <p className={`text-xs mt-1 ${b.invoiceSent ? "text-success" : "text-danger"}`}>
+              {b.invoiceSent ? "Invoice sent" : "Invoice not sent"}
+            </p>
+          </Link>
+          <div
+            className="ml-2 mt-1 text-text-muted hover:text-text-primary"
+            onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
+          >
+            <svg
+              className={`w-4 h-4 transition-transform ${open ? "rotate-90" : ""}`}
+              fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+        </div>
       </div>
 
       {/* Expanded details */}
@@ -236,8 +267,8 @@ export default function BookingsList({ bookings }: { bookings: BookingData[] | n
       </div>
 
       <div className="bg-bg-secondary border border-border" style={{ borderRadius: "1px" }}>
-        {/* Column headings */}
-        <div className="flex items-center px-5 py-3 border-b border-border text-text-muted text-xs font-medium uppercase tracking-wider">
+        {/* Column headings (desktop only) */}
+        <div className="hidden md:flex items-center px-5 py-3 border-b border-border text-text-muted text-xs font-medium uppercase tracking-wider">
           <div className="w-4 mr-3 shrink-0" />
           <div className="flex-1 flex items-center gap-6">
             <span className="w-40">Client</span>

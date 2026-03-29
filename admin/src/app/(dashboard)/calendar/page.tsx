@@ -59,7 +59,7 @@ export default function CalendarPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-3">
         <div>
           <h1 className="text-2xl font-bold">Calendar</h1>
           <p className="text-text-secondary text-sm mt-1">{format(currentMonth, "MMMM yyyy")}</p>
@@ -116,7 +116,7 @@ export default function CalendarPage() {
             return (
               <div
                 key={idx}
-                className={`min-h-28 border-b border-r border-border p-1.5 ${
+                className={`min-h-16 md:min-h-28 border-b border-r border-border p-1.5 ${
                   !isCurrentMonth ? "bg-bg-primary/50" : ""
                 }`}
               >
