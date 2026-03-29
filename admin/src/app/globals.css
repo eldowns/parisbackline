@@ -21,13 +21,21 @@
 }
 
 body {
-  background:
-    radial-gradient(circle, rgba(255,255,255,0.035) 1px, transparent 1px),
-    var(--color-bg-primary);
-  background-size: 24px 24px;
+  background: var(--color-bg-primary);
   color: var(--color-text-primary);
   font-family: "Inter", system-ui, -apple-system, sans-serif;
   font-weight: 300;
+}
+
+#dot-grid {
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.225) 1px, transparent 1px);
+  background-size: 22px 22px;
+  pointer-events: none;
+  z-index: 0;
+  -webkit-mask-image: radial-gradient(ellipse 100% 80% at 50% 50%, rgba(0,0,0,0.8) 20%, transparent 75%);
+  mask-image: radial-gradient(ellipse 100% 80% at 50% 50%, rgba(0,0,0,0.8) 20%, transparent 75%);
 }
 
 h1, h2, h3 {

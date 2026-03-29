@@ -13,7 +13,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.bunny.net" />
         <link href="https://fonts.bunny.net/css?family=bebas-neue:400|inter:300,400,500,600,700&display=swap" rel="stylesheet" />
       </head>
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        <div id="dot-grid" />
+        {children}
+      </body>
     </html>
   );
 }
