@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
         deliveryFee: body.deliveryFee || 0,
         deliveryBy: body.deliveryBy || null,
         referralFee: body.referralFee || 0,
+        referralPercent: body.referralPercent || 10,
         referralName: body.referralName || null,
         leadPartner: body.leadPartner,
         commPartner: body.commPartner,

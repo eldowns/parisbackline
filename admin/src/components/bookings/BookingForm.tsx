@@ -36,6 +36,7 @@ interface BookingData {
   deliveryFee: number;
   deliveryBy: string;
   referralFee: number;
+  referralPercent: number;
   referralName: string;
   leadPartner: string;
   commPartner: string;
@@ -71,6 +72,7 @@ export default function BookingForm({
       deliveryFee: 0,
       deliveryBy: "",
       referralFee: 0,
+      referralPercent: 10,
       referralName: "",
       leadPartner: "eric",
       commPartner: "eric",
@@ -94,7 +96,7 @@ export default function BookingForm({
     setForm((prev) => ({ ...prev, ...fields }));
   }
 
-  // Equipment selection
+  // Equipment
   function addEquipment(eqId: string) {
     if (form.equipment.find((e) => e.equipmentId === eqId)) return;
     update({ equipment: [...form.equipment, { equipmentId: eqId, quantity: 1, rentalPrice: 0 }] });
@@ -112,7 +114,6 @@ export default function BookingForm({
     });
   }
 
-  // Auto-sum rental fee from line items
   const equipmentTotal = form.equipment.reduce((sum, e) => sum + e.rentalPrice * e.quantity, 0);
 
   // Sub-rentals
@@ -130,19 +131,23 @@ export default function BookingForm({
     update({ subRentals: form.subRentals.filter((_, i) => i !== idx) });
   }
 
-  // Calculate payout
+  // Referral fee calculated from % of rental total (not including delivery)
   const effectiveRentalFee = equipmentTotal > 0 ? equipmentTotal : form.rentalFee;
+  const calculatedReferralFee = form.referralName
+    ? effectiveRentalFee * (form.referralPercent / 100)
+    : 0;
 
+  // Payout
   const payout = useMemo(() => {
     const selectedEquip = form.equipment
       .map((fe) => equipment.find((e) => e.id === fe.equipmentId))
       .filter(Boolean) as EquipmentItem[];
 
     return calculatePayout({
-      rentalFee: equipmentTotal > 0 ? equipmentTotal : form.rentalFee,
+      rentalFee: effectiveRentalFee,
       deliveryFee: form.deliveryFee,
       deliveryBy: form.deliveryBy || null,
-      referralFee: form.referralFee,
+      referralFee: calculatedReferralFee,
       leadPartner: form.leadPartner,
       commPartner: form.commPartner,
       invoicePartner: form.invoicePartner,
@@ -153,7 +158,7 @@ export default function BookingForm({
       })),
       subRentals: form.subRentals.filter((s) => s.provider && s.cost > 0),
     });
-  }, [form, equipment, equipmentTotal]);
+  }, [form, equipment, equipmentTotal, effectiveRentalFee, calculatedReferralFee]);
 
   async function handleCreateClient() {
     const res = await fetch("/api/clients", {
@@ -182,7 +187,11 @@ export default function BookingForm({
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, rentalFee: effectiveRentalFee }),
+        body: JSON.stringify({
+          ...form,
+          rentalFee: effectiveRentalFee,
+          referralFee: calculatedReferralFee,
+        }),
       });
 
       if (res.ok) {
@@ -199,7 +208,6 @@ export default function BookingForm({
     setSaving(false);
   }
 
-  const inputClass = "w-full";
   const labelClass = "block text-text-secondary text-xs font-medium mb-1.5 uppercase tracking-wider";
   const sectionClass = "bg-bg-secondary border border-border rounded-xl p-5 space-y-4";
 
@@ -211,10 +219,11 @@ export default function BookingForm({
             {formError}
           </div>
         )}
-        {/* Client & Dates */}
+
+        {/* Booking Details */}
         <div className={sectionClass}>
           <h3 className="text-sm font-semibold text-text-primary mb-2">Booking Details</h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div>
               <label className={labelClass}>Client</label>
               <div className="flex gap-2">
@@ -232,24 +241,25 @@ export default function BookingForm({
                 <button
                   type="button"
                   onClick={() => setShowNewClient(!showNewClient)}
-                  className="px-3 bg-bg-tertiary border border-border rounded-lg text-accent hover:text-accent-hover text-sm cursor-pointer"
+                  className="px-3 bg-bg-tertiary border border-border text-accent hover:text-accent-hover text-sm cursor-pointer"
+                  style={{ borderRadius: "1px" }}
                 >
                   +
                 </button>
               </div>
             </div>
             <div>
-              <label className={labelClass}>Status</label>
-              <select value={form.status} onChange={(e) => update({ status: e.target.value })} className={inputClass}>
-                <option value="confirmed">Confirmed</option>
-                <option value="completed">Completed</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
+              <label className={labelClass}>Start Date</label>
+              <input type="date" value={form.dateStart} onChange={(e) => update({ dateStart: e.target.value })} className="w-full" required />
+            </div>
+            <div>
+              <label className={labelClass}>End Date</label>
+              <input type="date" value={form.dateEnd} onChange={(e) => update({ dateEnd: e.target.value })} className="w-full" required />
             </div>
           </div>
 
           {showNewClient && (
-            <div className="bg-bg-tertiary border border-border rounded-lg p-4 space-y-3">
+            <div className="bg-bg-tertiary border border-border p-4 space-y-3" style={{ borderRadius: "1px" }}>
               <p className="text-xs font-semibold text-text-secondary uppercase">Quick Add Client</p>
               <div className="grid grid-cols-2 gap-3">
                 <input placeholder="Name *" value={newClient.name} onChange={(e) => setNewClient({ ...newClient, name: e.target.value })} required />
@@ -257,7 +267,7 @@ export default function BookingForm({
                 <input placeholder="Phone" value={newClient.phone} onChange={(e) => setNewClient({ ...newClient, phone: e.target.value })} />
                 <input placeholder="Company" value={newClient.company} onChange={(e) => setNewClient({ ...newClient, company: e.target.value })} />
               </div>
-              <button type="button" onClick={handleCreateClient} className="bg-accent text-white text-xs font-medium px-3 py-1.5 rounded-lg cursor-pointer">
+              <button type="button" onClick={handleCreateClient} className="bg-accent text-bg-primary text-xs font-medium px-3 py-1.5 cursor-pointer" style={{ borderRadius: "1px" }}>
                 Add Client
               </button>
             </div>
@@ -265,83 +275,12 @@ export default function BookingForm({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={labelClass}>Start Date</label>
-              <input type="date" value={form.dateStart} onChange={(e) => update({ dateStart: e.target.value })} className={inputClass} required />
-            </div>
-            <div>
-              <label className={labelClass}>End Date</label>
-              <input type="date" value={form.dateEnd} onChange={(e) => update({ dateEnd: e.target.value })} className={inputClass} required />
-            </div>
-          </div>
-
-          <div>
-            <label className={labelClass}>Description</label>
-            <textarea
-              value={form.description}
-              onChange={(e) => update({ description: e.target.value })}
-              className="w-full h-20 resize-none"
-              placeholder="Event details, location, etc."
-            />
-          </div>
-        </div>
-
-        {/* Financials */}
-        <div className={sectionClass}>
-          <h3 className="text-sm font-semibold text-text-primary mb-2">Financials</h3>
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <label className={labelClass}>Rental Fee ($)</label>
-              <input
-                type="number"
-                step="0.01"
-                value={equipmentTotal > 0 ? equipmentTotal : (form.rentalFee || "")}
-                onChange={(e) => update({ rentalFee: parseFloat(e.target.value) || 0 })}
-                className={inputClass}
-                required
-              />
-              {equipmentTotal > 0 && (
-                <p className="text-text-muted text-xs mt-1">Auto-calculated from equipment</p>
-              )}
-            </div>
-            <div>
-              <label className={labelClass}>Delivery Fee ($)</label>
-              <input
-                type="number"
-                step="0.01"
-                value={form.deliveryFee || ""}
-                onChange={(e) => update({ deliveryFee: parseFloat(e.target.value) || 0 })}
-                className={inputClass}
-              />
-            </div>
-            <div>
-              <label className={labelClass}>Delivery By</label>
-              <select value={form.deliveryBy} onChange={(e) => update({ deliveryBy: e.target.value })} className={inputClass}>
-                <option value="">N/A</option>
-                <option value="eric">Eric</option>
-                <option value="marko">Marko</option>
-                <option value="both">Both</option>
+              <label className={labelClass}>Status</label>
+              <select value={form.status} onChange={(e) => update({ status: e.target.value })} className="w-full">
+                <option value="confirmed">Confirmed</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
               </select>
-            </div>
-          </div>
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <label className={labelClass}>Referral Fee ($)</label>
-              <input
-                type="number"
-                step="0.01"
-                value={form.referralFee || ""}
-                onChange={(e) => update({ referralFee: parseFloat(e.target.value) || 0 })}
-                className={inputClass}
-              />
-            </div>
-            <div>
-              <label className={labelClass}>Referral Name</label>
-              <input
-                value={form.referralName}
-                onChange={(e) => update({ referralName: e.target.value })}
-                className={inputClass}
-                placeholder="Who referred?"
-              />
             </div>
             <div className="flex items-end gap-4">
               <label className="flex items-center gap-2 cursor-pointer">
@@ -356,27 +295,6 @@ export default function BookingForm({
           </div>
         </div>
 
-        {/* Admin Roles */}
-        <div className={sectionClass}>
-          <h3 className="text-sm font-semibold text-text-primary mb-2">Admin Roles (25% each)</h3>
-          <div className="grid grid-cols-4 gap-4">
-            {[
-              { key: "leadPartner" as const, label: "Lead" },
-              { key: "commPartner" as const, label: "Communication" },
-              { key: "invoicePartner" as const, label: "Invoicing" },
-              { key: "accountPartner" as const, label: "Accounting" },
-            ].map(({ key, label }) => (
-              <div key={key}>
-                <label className={labelClass}>{label}</label>
-                <select value={form[key]} onChange={(e) => update({ [key]: e.target.value })} className={inputClass}>
-                  <option value="eric">Eric</option>
-                  <option value="marko">Marko</option>
-                </select>
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* Equipment */}
         <div className={sectionClass}>
           <div className="flex items-center justify-between mb-2">
@@ -384,7 +302,6 @@ export default function BookingForm({
             <p className="text-sm font-semibold text-accent">Total: ${equipmentTotal.toFixed(2)}</p>
           </div>
 
-          {/* Selected items */}
           {form.equipment.length > 0 && (
             <div className="space-y-2 mb-4">
               {form.equipment.map((fe) => {
@@ -392,7 +309,7 @@ export default function BookingForm({
                 if (!eq) return null;
                 const displayName = [eq.manufacturer, eq.model].filter(Boolean).join(" ") || eq.name;
                 return (
-                  <div key={fe.equipmentId} className="flex items-center gap-3 p-3 border border-accent/20 bg-accent/5" style={{ borderRadius: "1px" }}>
+                  <div key={fe.equipmentId} className="flex items-center gap-3 p-3 bg-accent/5" style={{ borderRadius: "1px" }}>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{displayName}</p>
                       <p className="text-xs text-text-muted">
@@ -438,7 +355,6 @@ export default function BookingForm({
             </div>
           )}
 
-          {/* Add from inventory */}
           <select
             onChange={(e) => { if (e.target.value) { addEquipment(e.target.value); e.target.value = ""; } }}
             className="w-full"
@@ -453,12 +369,6 @@ export default function BookingForm({
                 </option>
               ))}
           </select>
-
-          {equipment.length === 0 && (
-            <p className="text-text-muted text-sm text-center py-4">
-              No equipment yet. Add some in the Equipment section.
-            </p>
-          )}
         </div>
 
         {/* Sub-Rentals */}
@@ -477,37 +387,17 @@ export default function BookingForm({
             <div key={idx} className="grid grid-cols-4 gap-3 items-end">
               <div>
                 <label className={labelClass}>Provider</label>
-                <input
-                  value={sr.provider}
-                  onChange={(e) => updateSubRental(idx, { provider: e.target.value })}
-                  className={inputClass}
-                  placeholder="e.g., Dario"
-                />
+                <input value={sr.provider} onChange={(e) => updateSubRental(idx, { provider: e.target.value })} className="w-full" placeholder="e.g., Dario" />
               </div>
               <div>
                 <label className={labelClass}>Description</label>
-                <input
-                  value={sr.description}
-                  onChange={(e) => updateSubRental(idx, { description: e.target.value })}
-                  className={inputClass}
-                  placeholder="What gear?"
-                />
+                <input value={sr.description} onChange={(e) => updateSubRental(idx, { description: e.target.value })} className="w-full" placeholder="What gear?" />
               </div>
               <div>
                 <label className={labelClass}>Cost ($)</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={sr.cost || ""}
-                  onChange={(e) => updateSubRental(idx, { cost: parseFloat(e.target.value) || 0 })}
-                  className={inputClass}
-                />
+                <input type="number" step="0.01" value={sr.cost || ""} onChange={(e) => updateSubRental(idx, { cost: parseFloat(e.target.value) || 0 })} className="w-full" />
               </div>
-              <button
-                type="button"
-                onClick={() => removeSubRental(idx)}
-                className="text-danger hover:text-danger/70 text-xs font-medium pb-2 cursor-pointer"
-              >
+              <button type="button" onClick={() => removeSubRental(idx)} className="text-danger hover:text-danger/70 text-xs font-medium pb-2 cursor-pointer">
                 Remove
               </button>
             </div>
@@ -515,6 +405,92 @@ export default function BookingForm({
           {form.subRentals.length === 0 && (
             <p className="text-text-muted text-sm text-center py-2">No sub-rentals for this booking</p>
           )}
+        </div>
+
+        {/* Delivery */}
+        <div className={sectionClass}>
+          <h3 className="text-sm font-semibold text-text-primary mb-2">Delivery</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={labelClass}>Delivery Fee ($)</label>
+              <input
+                type="number"
+                step="0.01"
+                value={form.deliveryFee || ""}
+                onChange={(e) => update({ deliveryFee: parseFloat(e.target.value) || 0 })}
+                className="w-full"
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Delivered By</label>
+              <select value={form.deliveryBy} onChange={(e) => update({ deliveryBy: e.target.value })} className="w-full">
+                <option value="">N/A</option>
+                <option value="eric">Eric</option>
+                <option value="marko">Marko</option>
+                <option value="both">Both</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Referral */}
+        <div className={sectionClass}>
+          <h3 className="text-sm font-semibold text-text-primary mb-2">Referral</h3>
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <label className={labelClass}>Referrer</label>
+              <input
+                value={form.referralName}
+                onChange={(e) => update({ referralName: e.target.value })}
+                className="w-full"
+                placeholder="Who referred?"
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Referral %</label>
+              <input
+                type="number"
+                step="0.5"
+                min={0}
+                max={100}
+                value={form.referralPercent}
+                onChange={(e) => update({ referralPercent: parseFloat(e.target.value) || 0 })}
+                className="w-full"
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Referral Fee</label>
+              <p className="text-sm font-semibold text-text-primary py-2">
+                ${calculatedReferralFee.toFixed(2)}
+                {form.referralName && (
+                  <span className="text-text-muted font-normal ml-1">
+                    ({form.referralPercent}% of ${effectiveRentalFee.toFixed(2)})
+                  </span>
+                )}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Admin */}
+        <div className={sectionClass}>
+          <h3 className="text-sm font-semibold text-text-primary mb-2">Admin (25% each)</h3>
+          <div className="grid grid-cols-4 gap-4">
+            {[
+              { key: "leadPartner" as const, label: "Lead" },
+              { key: "commPartner" as const, label: "Communication" },
+              { key: "invoicePartner" as const, label: "Invoicing" },
+              { key: "accountPartner" as const, label: "Accounting" },
+            ].map(({ key, label }) => (
+              <div key={key}>
+                <label className={labelClass}>{label}</label>
+                <select value={form[key]} onChange={(e) => update({ [key]: e.target.value })} className="w-full">
+                  <option value="eric">Eric</option>
+                  <option value="marko">Marko</option>
+                </select>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Notes */}
@@ -532,14 +508,16 @@ export default function BookingForm({
           <button
             type="submit"
             disabled={saving}
-            className="bg-accent hover:bg-accent-hover text-white font-medium px-6 py-2.5 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
+            className="bg-accent text-bg-primary font-medium px-6 py-2.5 transition-all disabled:opacity-50 cursor-pointer hover:brightness-110"
+            style={{ borderRadius: "1px" }}
           >
             {saving ? "Saving..." : isEdit ? "Update Booking" : "Create Booking"}
           </button>
           <button
             type="button"
             onClick={() => router.back()}
-            className="bg-bg-tertiary border border-border text-text-secondary hover:text-text-primary font-medium px-6 py-2.5 rounded-lg transition-colors cursor-pointer"
+            className="border border-border text-text-secondary hover:text-text-primary font-medium px-6 py-2.5 transition-colors cursor-pointer"
+            style={{ borderRadius: "1px" }}
           >
             Cancel
           </button>
@@ -549,7 +527,7 @@ export default function BookingForm({
       {/* Right sidebar — live payout breakdown */}
       <div className="col-span-1">
         <div className="sticky top-8">
-          <PayoutBreakdown payout={payout} rentalFee={form.rentalFee} deliveryFee={form.deliveryFee} />
+          <PayoutBreakdown payout={payout} rentalFee={effectiveRentalFee} deliveryFee={form.deliveryFee} />
         </div>
       </div>
     </form>

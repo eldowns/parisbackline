@@ -28,6 +28,7 @@ export default async function EditBookingPage({ params }: { params: Promise<{ id
     deliveryFee: booking.deliveryFee,
     deliveryBy: booking.deliveryBy || "",
     referralFee: booking.referralFee,
+    referralPercent: booking.referralPercent,
     referralName: booking.referralName || "",
     leadPartner: booking.leadPartner,
     commPartner: booking.commPartner,
