@@ -1,15 +1,5 @@
 import React from "react";
-import { Document, Page, Text, View, StyleSheet, Font } from "@react-pdf/renderer";
-
-Font.register({
-  family: "Inter",
-  fonts: [
-    { src: "https://fonts.bunny.net/inter/files/inter-latin-300-normal.woff2", fontWeight: 300 },
-    { src: "https://fonts.bunny.net/inter/files/inter-latin-400-normal.woff2", fontWeight: 400 },
-    { src: "https://fonts.bunny.net/inter/files/inter-latin-600-normal.woff2", fontWeight: 600 },
-    { src: "https://fonts.bunny.net/inter/files/inter-latin-700-normal.woff2", fontWeight: 700 },
-  ],
-});
+import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 
 const gold = "#c8a44a";
 const bg = "#09090f";
@@ -23,7 +13,7 @@ const s = StyleSheet.create({
   page: {
     backgroundColor: bg,
     padding: 48,
-    fontFamily: "Inter",
+    fontFamily: "Helvetica",
     color: textPrimary,
     fontSize: 10,
     fontWeight: 300,
