@@ -26,7 +26,7 @@ export default function Greeting({ name }: { name: string }) {
 
   return (
     <span className="text-text-secondary text-base">
-      {greeting}, <span className="text-text-primary">{name}</span>
+      {greeting}, {name}
       <span
         className="ml-1.5 inline-block"
         style={{
