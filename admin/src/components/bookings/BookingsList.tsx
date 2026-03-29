@@ -73,7 +73,7 @@ function BookingRow({ b }: { b: BookingData }) {
   return (
     <div className="border-b border-border">
       {/* Summary row */}
-      <div className="flex items-center px-5 py-4 hover:bg-bg-hover transition-colors cursor-pointer">
+      <div className="flex items-center px-5 py-4 hover:bg-bg-hover active:bg-transparent transition-colors cursor-pointer">
         <div
           className="mr-3 text-text-muted hover:text-text-primary"
           onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
@@ -96,6 +96,10 @@ function BookingRow({ b }: { b: BookingData }) {
             {displayStatus}
           </span>
         </Link>
+
+        <span className={`text-xs ml-4 whitespace-nowrap ${b.invoiceSent ? "text-success" : "text-danger"}`}>
+          {b.invoiceSent ? "Invoice sent" : "Invoice not sent"}
+        </span>
       </div>
 
       {/* Expanded details */}
