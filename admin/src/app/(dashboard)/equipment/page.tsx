@@ -9,6 +9,7 @@ interface EquipmentItem {
   name: string;
   category: string;
   owner: string;
+  quantity: number;
   internalValue: number;
   serialNumber: string | null;
   notes: string | null;
@@ -21,34 +22,44 @@ export default function EquipmentPage() {
   const [equipment, setEquipment] = useState<EquipmentItem[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-  const [form, setForm] = useState({ manufacturer: "", model: "", name: "", category: "Wireless Mic", owner: "eric", internalValue: 0, serialNumber: "", notes: "" });
+  const [form, setForm] = useState({ manufacturer: "", model: "", name: "", category: "Wireless Mic", owner: "eric", quantity: 1, internalValue: 0, serialNumber: "", notes: "" });
   const [filter, setFilter] = useState("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
     fetch("/api/equipment").then((r) => r.json()).then(setEquipment);
   }, []);
 
   function resetForm() {
-    setForm({ manufacturer: "", model: "", name: "", category: "Wireless Mic", owner: "eric", internalValue: 0, serialNumber: "", notes: "" });
+    setForm({ manufacturer: "", model: "", name: "", category: "Wireless Mic", owner: "eric", quantity: 1, internalValue: 0, serialNumber: "", notes: "" });
     setEditId(null);
     setShowForm(false);
+    setError("");
   }
 
   function startEdit(eq: EquipmentItem) {
-    setForm({ manufacturer: eq.manufacturer || "", model: eq.model || "", name: eq.name, category: eq.category, owner: eq.owner, internalValue: eq.internalValue, serialNumber: eq.serialNumber || "", notes: eq.notes || "" });
+    setForm({ manufacturer: eq.manufacturer || "", model: eq.model || "", name: eq.name, category: eq.category, owner: eq.owner, quantity: eq.quantity, internalValue: eq.internalValue, serialNumber: eq.serialNumber || "", notes: eq.notes || "" });
     setEditId(eq.id);
     setShowForm(true);
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setError("");
     const url = editId ? `/api/equipment/${editId}` : "/api/equipment";
     const method = editId ? "PUT" : "POST";
-    const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
-    if (res.ok) {
-      const updated = await fetch("/api/equipment").then((r) => r.json());
-      setEquipment(updated);
-      resetForm();
+    try {
+      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
+      if (res.ok) {
+        const updated = await fetch("/api/equipment").then((r) => r.json());
+        setEquipment(updated);
+        resetForm();
+      } else {
+        const data = await res.json();
+        setError(data.error || "Failed to save");
+      }
+    } catch (err) {
+      setError(String(err));
     }
   }
 
@@ -62,7 +73,7 @@ export default function EquipmentPage() {
     (filter === "" || e.owner === filter) && e.active
   );
 
-  const totalValue = filtered.reduce((sum, e) => sum + e.internalValue, 0);
+  const totalValue = filtered.reduce((sum, e) => sum + e.internalValue * e.quantity, 0);
 
   return (
     <div>
@@ -100,6 +111,11 @@ export default function EquipmentPage() {
       {showForm && (
         <form onSubmit={handleSubmit} className="bg-bg-secondary border border-border rounded-xl p-5 mb-6 space-y-4">
           <h3 className="text-sm font-semibold">{editId ? "Edit Equipment" : "Add Equipment"}</h3>
+          {error && (
+            <div className="border border-danger/30 text-danger text-xs p-3" style={{ borderRadius: "1px", background: "rgba(239,68,68,0.05)" }}>
+              {error}
+            </div>
+          )}
           <div className="grid grid-cols-4 gap-4">
             <div>
               <label className="block text-text-secondary text-xs font-medium mb-1.5 uppercase tracking-wider">Manufacturer</label>
@@ -128,6 +144,10 @@ export default function EquipmentPage() {
               </select>
             </div>
             <div>
+              <label className="block text-text-secondary text-xs font-medium mb-1.5 uppercase tracking-wider">Quantity</label>
+              <input type="number" min={1} value={form.quantity} onChange={(e) => setForm({ ...form, quantity: parseInt(e.target.value) || 1 })} className="w-full" required />
+            </div>
+            <div>
               <label className="block text-text-secondary text-xs font-medium mb-1.5 uppercase tracking-wider">Internal Value ($)</label>
               <input type="number" step="0.01" value={form.internalValue || ""} onChange={(e) => setForm({ ...form, internalValue: parseFloat(e.target.value) || 0 })} className="w-full" required />
             </div>
@@ -135,10 +155,10 @@ export default function EquipmentPage() {
               <label className="block text-text-secondary text-xs font-medium mb-1.5 uppercase tracking-wider">Serial Number</label>
               <input value={form.serialNumber} onChange={(e) => setForm({ ...form, serialNumber: e.target.value })} className="w-full" placeholder="Optional" />
             </div>
-            <div>
-              <label className="block text-text-secondary text-xs font-medium mb-1.5 uppercase tracking-wider">Notes</label>
-              <input value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="w-full" placeholder="Optional" />
-            </div>
+          </div>
+          <div>
+            <label className="block text-text-secondary text-xs font-medium mb-1.5 uppercase tracking-wider">Notes</label>
+            <input value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="w-full" placeholder="Optional" />
           </div>
           <div className="flex gap-3">
             <button type="submit" className="bg-accent hover:bg-accent-hover text-white text-sm font-medium px-4 py-2 rounded-lg cursor-pointer">
@@ -159,6 +179,7 @@ export default function EquipmentPage() {
               <th className="text-left px-5 py-3 font-medium">Name</th>
               <th className="text-left px-5 py-3 font-medium">Category</th>
               <th className="text-left px-5 py-3 font-medium">Owner</th>
+              <th className="text-center px-5 py-3 font-medium">Qty</th>
               <th className="text-right px-5 py-3 font-medium">Value</th>
               <th className="text-left px-5 py-3 font-medium">Serial</th>
               <th className="text-right px-5 py-3 font-medium">Actions</th>
@@ -180,6 +201,7 @@ export default function EquipmentPage() {
                     {eq.owner.charAt(0).toUpperCase() + eq.owner.slice(1)}
                   </span>
                 </td>
+                <td className="px-5 py-3 text-center">{eq.quantity}</td>
                 <td className="px-5 py-3 text-right font-semibold">${eq.internalValue.toLocaleString()}</td>
                 <td className="px-5 py-3 text-text-muted text-xs font-mono">{eq.serialNumber || "—"}</td>
                 <td className="px-5 py-3 text-right">
@@ -189,7 +211,7 @@ export default function EquipmentPage() {
               </tr>
             ))}
             {filtered.length === 0 && (
-              <tr><td colSpan={8} className="px-5 py-12 text-center text-text-muted">No equipment found</td></tr>
+              <tr><td colSpan={9} className="px-5 py-12 text-center text-text-muted">No equipment found</td></tr>
             )}
           </tbody>
         </table>

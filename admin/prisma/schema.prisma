@@ -34,6 +34,7 @@ model Equipment {
   name          String
   category      String
   owner         String
+  quantity      Int                @default(1)
   internalValue Float
   serialNumber  String?
   notes         String?

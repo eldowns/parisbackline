@@ -19,6 +19,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       name: body.name,
       category: body.category,
       owner: body.owner,
+      quantity: body.quantity || 1,
       internalValue: body.internalValue,
       serialNumber: body.serialNumber,
       notes: body.notes,
