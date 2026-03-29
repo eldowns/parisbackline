@@ -114,7 +114,7 @@ export default function EquipmentPage() {
           <form
             onSubmit={handleSubmit}
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-xl border border-border p-6 space-y-5"
+            className="relative w-full max-w-xl mx-4 border border-border p-6 space-y-5"
             style={{ borderRadius: "1px", background: "#111118" }}
           >
             <div className="flex items-center justify-between">

@@ -217,6 +217,14 @@ export default function BookingForm({
   return (
     <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2 space-y-6">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="text-text-muted text-xs hover:text-accent transition-colors cursor-pointer"
+        >
+          &larr; Back
+        </button>
+
         {formError && (
           <div className="border border-danger/30 text-danger text-sm p-4" style={{ borderRadius: "1px", background: "rgba(239,68,68,0.05)" }}>
             {formError}
@@ -226,7 +234,7 @@ export default function BookingForm({
         {/* Booking Details */}
         <div className={sectionClass}>
           <h3 className="text-sm font-semibold text-text-primary mb-2">Booking Details</h3>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className={labelClass}>Client</label>
               <div className="flex gap-2">
@@ -439,7 +447,7 @@ export default function BookingForm({
         {/* Referral */}
         <div className={sectionClass}>
           <h3 className="text-sm font-semibold text-text-primary mb-2">Referral</h3>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className={labelClass}>Referrer</label>
               <input
@@ -478,7 +486,7 @@ export default function BookingForm({
         {/* Admin */}
         <div className={sectionClass}>
           <h3 className="text-sm font-semibold text-text-primary mb-2">Admin (25% each)</h3>
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
               { key: "leadPartner" as const, label: "Lead" },
               { key: "commPartner" as const, label: "Communication" },

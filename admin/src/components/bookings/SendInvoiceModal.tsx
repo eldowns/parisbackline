@@ -94,7 +94,7 @@ export default function SendInvoiceModal({ bookingId, clientName, clientEmail, o
     <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
       <div
-        className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-border"
+        className="relative w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto border border-border"
         onClick={(e) => e.stopPropagation()}
         style={{ borderRadius: "1px", background: "#111118" }}
       >

@@ -71,7 +71,7 @@ export default function ClientsPage() {
       {showForm && (
         <form onSubmit={handleSubmit} className="bg-bg-secondary border border-border rounded-none p-5 mb-6 space-y-4">
           <h3 className="text-sm font-semibold">{editId ? "Edit Client" : "Add Client"}</h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-text-secondary text-xs font-medium mb-1.5 uppercase tracking-wider">Client Name</label>
               <input value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} className="w-full" placeholder="Company or project name" />
