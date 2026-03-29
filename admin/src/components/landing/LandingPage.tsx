@@ -105,7 +105,7 @@ export default function LandingPage() {
           { "@type": "AdministrativeArea", name: "Greater Los Angeles" },
         ],
         priceRange: "$$",
-        image: "https://parisbackline.com/og-image.svg",
+        image: "https://parisbackline.com/opengraph-image",
         sameAs: [],
         hasOfferCatalog: {
           "@type": "OfferCatalog",

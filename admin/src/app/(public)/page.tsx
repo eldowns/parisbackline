@@ -33,14 +33,14 @@ export const metadata: Metadata = {
       "Professional backline and wireless audio equipment rental across Greater Los Angeles. Sennheiser wireless, Midas consoles, IEM systems, Nord pianos — maintained to touring spec.",
     url: baseUrl,
     locale: "en_US",
-    images: [{ url: `${baseUrl}/og-image.svg`, width: 1200, height: 630, alt: "Paris Backline — Los Angeles Backline & Wireless Audio Rental" }],
+    images: [{ url: `${baseUrl}/opengraph-image`, width: 1200, height: 630, alt: "Paris Backline — Los Angeles Backline & Wireless Audio Rental" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Los Angeles Backline Rental | Paris Backline",
     description:
       "Professional backline and wireless audio rental across Greater Los Angeles. Sennheiser wireless, Midas consoles, IEM systems, Nord pianos.",
-    images: [`${baseUrl}/og-image.svg`],
+    images: [`${baseUrl}/opengraph-image`],
   },
 };
 
