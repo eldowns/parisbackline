@@ -27,8 +27,8 @@ export async function POST(request: NextRequest) {
       data: {
         clientId: body.clientId,
         description: body.description,
-        dateStart: new Date(body.dateStart),
-        dateEnd: new Date(body.dateEnd),
+        dateStart: new Date(body.dateStart + "T12:00:00Z"),
+        dateEnd: new Date(body.dateEnd + "T12:00:00Z"),
         rentalFee: body.rentalFee,
         deliveryFee: body.deliveryFee || 0,
         deliveryBy: body.deliveryBy || null,
