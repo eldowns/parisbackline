@@ -42,10 +42,15 @@ export default function CalendarPage() {
     return eachDayOfInterval({ start: calStart, end: calEnd });
   }, [currentMonth]);
 
+  function toLocalDate(d: string) {
+    const date = new Date(d);
+    return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+  }
+
   function getBookingsForDay(day: Date) {
     return bookings.filter((b) => {
-      const start = new Date(b.dateStart);
-      const end = new Date(b.dateEnd);
+      const start = toLocalDate(b.dateStart);
+      const end = toLocalDate(b.dateEnd);
       return isWithinInterval(day, { start, end }) || isSameDay(day, start) || isSameDay(day, end);
     });
   }
