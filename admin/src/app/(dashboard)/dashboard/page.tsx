@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { format, startOfMonth, startOfYear } from "date-fns";
+import CountUp from "@/components/ui/CountUp";
 
 export const dynamic = "force-dynamic";
 
@@ -150,38 +151,38 @@ export default async function DashboardPage() {
         <div className="bg-bg-secondary border border-border p-5 dash-card">
           <p className="text-text-muted text-[0.65rem] font-semibold uppercase tracking-[0.18em] mb-1">Month to Date</p>
           <p className="text-2xl font-bold text-accent" style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.02em" }}>
-            ${mtdPaidTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            <CountUp value={mtdPaidTotal} prefix="$" decimals={2} />
           </p>
           {mtdPendingTotal > 0 && (
-            <p className="text-xs text-warning mt-1">${mtdPendingTotal.toLocaleString()} pending</p>
+            <p className="text-xs text-warning mt-1"><CountUp value={mtdPendingTotal} prefix="$" /> pending</p>
           )}
           <div className="flex gap-4 mt-2 text-xs text-text-muted">
-            <span>{mtdBookingCount} bookings</span>
+            <span><CountUp value={mtdBookingCount} /> bookings</span>
           </div>
         </div>
         <div className="bg-bg-secondary border border-border p-5 dash-card">
           <p className="text-text-muted text-[0.65rem] font-semibold uppercase tracking-[0.18em] mb-1">Year to Date</p>
           <p className="text-2xl font-bold text-success" style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.02em" }}>
-            ${ytdPaidTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            <CountUp value={ytdPaidTotal} prefix="$" decimals={2} />
           </p>
           {ytdPendingTotal > 0 && (
-            <p className="text-xs text-warning mt-1">${ytdPendingTotal.toLocaleString()} pending</p>
+            <p className="text-xs text-warning mt-1"><CountUp value={ytdPendingTotal} prefix="$" /> pending</p>
           )}
           <div className="flex gap-4 mt-2 text-xs text-text-muted">
-            <span>{ytdBookingCount} bookings</span>
+            <span><CountUp value={ytdBookingCount} /> bookings</span>
           </div>
         </div>
         <div className="bg-bg-secondary border border-border p-5 dash-card">
           <p className="text-text-muted text-[0.65rem] font-semibold uppercase tracking-[0.18em] mb-1">All Time</p>
           <p className="text-2xl font-bold text-text-primary" style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.02em" }}>
-            ${allTimePaidTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            <CountUp value={allTimePaidTotal} prefix="$" decimals={2} />
           </p>
           {allTimePendingTotal > 0 && (
-            <p className="text-xs text-warning mt-1">${allTimePendingTotal.toLocaleString()} pending</p>
+            <p className="text-xs text-warning mt-1"><CountUp value={allTimePendingTotal} prefix="$" /> pending</p>
           )}
           <div className="flex gap-4 mt-2 text-xs text-text-muted">
-            <span>{totalBookings} bookings</span>
-            <span>{totalClients} clients</span>
+            <span><CountUp value={totalBookings} /> bookings</span>
+            <span><CountUp value={totalClients} /> clients</span>
           </div>
         </div>
       </div>
@@ -190,27 +191,27 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mb-6">
         <div className="bg-bg-secondary border border-border p-4 text-center dash-card">
           <p className="text-text-muted text-[0.6rem] uppercase tracking-wider mb-1">Active</p>
-          <p className="text-xl font-bold text-eric" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>{activeBookings}</p>
+          <p className="text-xl font-bold text-eric" style={{ fontFamily: "'Bebas Neue', sans-serif" }}><CountUp value={activeBookings} /></p>
         </div>
         <div className="bg-bg-secondary border border-border p-4 text-center dash-card">
           <p className="text-text-muted text-[0.6rem] uppercase tracking-wider mb-1">Completed</p>
-          <p className="text-xl font-bold text-success" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>{completedBookings}</p>
+          <p className="text-xl font-bold text-success" style={{ fontFamily: "'Bebas Neue', sans-serif" }}><CountUp value={completedBookings} /></p>
         </div>
         <div className="bg-bg-secondary border border-border p-4 text-center dash-card">
           <p className="text-text-muted text-[0.6rem] uppercase tracking-wider mb-1">Cancelled</p>
-          <p className="text-xl font-bold text-danger" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>{cancelledBookings}</p>
+          <p className="text-xl font-bold text-danger" style={{ fontFamily: "'Bebas Neue', sans-serif" }}><CountUp value={cancelledBookings} /></p>
         </div>
         <div className="bg-bg-secondary border border-border p-4 text-center dash-card">
           <p className="text-text-muted text-[0.6rem] uppercase tracking-wider mb-1">Equipment</p>
-          <p className="text-xl font-bold text-marko" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>{totalEquipment}</p>
+          <p className="text-xl font-bold text-marko" style={{ fontFamily: "'Bebas Neue', sans-serif" }}><CountUp value={totalEquipment} /></p>
         </div>
         <div className="bg-bg-secondary border border-border p-4 text-center dash-card">
           <p className="text-text-muted text-[0.6rem] uppercase tracking-wider mb-1">Unpaid</p>
-          <p className="text-xl font-bold text-warning" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>{unpaidBookings.length}</p>
+          <p className="text-xl font-bold text-warning" style={{ fontFamily: "'Bebas Neue', sans-serif" }}><CountUp value={unpaidBookings.length} /></p>
         </div>
         <div className="bg-bg-secondary border border-border p-4 text-center dash-card">
           <p className="text-text-muted text-[0.6rem] uppercase tracking-wider mb-1">Outstanding</p>
-          <p className="text-xl font-bold text-warning" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>${unpaidTotal.toLocaleString()}</p>
+          <p className="text-xl font-bold text-warning" style={{ fontFamily: "'Bebas Neue', sans-serif" }}><CountUp value={unpaidTotal} prefix="$" /></p>
         </div>
       </div>
 
