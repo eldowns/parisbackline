@@ -12,6 +12,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 }
 
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
   const { id } = await params;
   const body = await request.json();
 
@@ -59,6 +60,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   });
 
   return NextResponse.json(booking);
+  } catch (err) {
+    console.error("Booking update error:", err);
+    return NextResponse.json({ error: String(err) }, { status: 500 });
+  }
 }
 
 export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
 
@@ -37,8 +37,22 @@ function capitalize(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+function formatDate(d: string) {
+  // Parse as UTC to avoid timezone shift
+  const date = new Date(d);
+  return format(new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()), "MMM d");
+}
+
 function BookingRow({ b }: { b: BookingData }) {
   const [open, setOpen] = useState(false);
+  const innerRef = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState(0);
+
+  useEffect(() => {
+    if (innerRef.current) {
+      setHeight(innerRef.current.offsetHeight);
+    }
+  }, [open]);
 
   const statusColor =
     b.status === "confirmed" ? "text-accent" :
@@ -64,7 +78,7 @@ function BookingRow({ b }: { b: BookingData }) {
         <div className="flex-1 min-w-0 flex items-center gap-6">
           <span className="font-medium text-sm w-40 truncate">{b.client.name}</span>
           <span className="text-text-secondary text-sm w-36">
-            {format(new Date(b.dateStart), "MMM d")} – {format(new Date(b.dateEnd), "MMM d")}
+            {formatDate(b.dateStart)} – {formatDate(b.dateEnd)}
           </span>
           <span className="text-sm font-semibold w-24 text-right">${b.rentalFee.toLocaleString()}</span>
           <span className={`text-xs font-medium uppercase tracking-wider ${statusColor}`}>
@@ -82,10 +96,13 @@ function BookingRow({ b }: { b: BookingData }) {
 
       {/* Expanded details */}
       <div
-        className="overflow-hidden transition-all duration-300 ease-in-out"
-        style={{ maxHeight: open ? "600px" : "0", opacity: open ? 1 : 0 }}
+        className="overflow-hidden"
+        style={{
+          height: open ? height : 0,
+          transition: "height 350ms cubic-bezier(0.4, 0, 0.2, 1)",
+        }}
       >
-        <div className="px-8 pb-6 pt-2 ml-7 mr-5 space-y-4">
+        <div ref={innerRef} className="px-10 pb-8 pt-3 ml-7 mr-5 space-y-5">
           <div className="grid grid-cols-3 gap-6 text-sm">
             {/* Equipment */}
             {b.equipment.length > 0 && (
