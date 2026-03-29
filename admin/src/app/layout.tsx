@@ -2,8 +2,15 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Paris Backline | Admin",
-  description: "Rental management system for Paris Backline",
+  metadataBase: new URL("https://parisbackline.com"),
+  title: {
+    default: "Paris Backline | Los Angeles Backline & Audio Equipment Rental",
+    template: "%s | Paris Backline",
+  },
+  description: "Professional backline and wireless audio equipment rental across Greater Los Angeles.",
+  verification: {
+    google: "",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -70,8 +70,81 @@ export default function LandingPage() {
     }
   }
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "LocalBusiness",
+        "@id": "https://parisbackline.com/#business",
+        name: "Paris Backline",
+        description: "Professional backline and wireless audio equipment rental serving Greater Los Angeles. Sennheiser wireless specialists, Midas digital consoles, IEM systems, and Nord stage pianos — maintained to touring spec.",
+        url: "https://parisbackline.com",
+        telephone: "",
+        email: "parisbackline@gmail.com",
+        address: {
+          "@type": "PostalAddress",
+          addressLocality: "Los Angeles",
+          addressRegion: "CA",
+          addressCountry: "US",
+        },
+        geo: {
+          "@type": "GeoCoordinates",
+          latitude: 34.0522,
+          longitude: -118.2437,
+        },
+        areaServed: [
+          { "@type": "City", name: "Los Angeles" },
+          { "@type": "City", name: "Hollywood" },
+          { "@type": "City", name: "West Hollywood" },
+          { "@type": "City", name: "Santa Monica" },
+          { "@type": "City", name: "Burbank" },
+          { "@type": "City", name: "Glendale" },
+          { "@type": "City", name: "Pasadena" },
+          { "@type": "City", name: "Long Beach" },
+          { "@type": "City", name: "Downtown Los Angeles" },
+          { "@type": "AdministrativeArea", name: "Greater Los Angeles" },
+        ],
+        priceRange: "$$",
+        image: "https://parisbackline.com/og-image.svg",
+        sameAs: [],
+        hasOfferCatalog: {
+          "@type": "OfferCatalog",
+          name: "Backline & Audio Equipment Rental",
+          itemListElement: [
+            { "@type": "Offer", itemOffered: { "@type": "Service", name: "Backline Rental Los Angeles", description: "Professional backline equipment rental for live events, tours, and productions across Greater Los Angeles" } },
+            { "@type": "Offer", itemOffered: { "@type": "Service", name: "Wireless Microphone Rental", description: "Sennheiser EW-500 G4 and EW-DX digital wireless microphone and bodypack system rental" } },
+            { "@type": "Offer", itemOffered: { "@type": "Service", name: "IEM Rental Los Angeles", description: "Sennheiser EW IEM G4 in-ear monitor wireless system rental for live performance" } },
+            { "@type": "Offer", itemOffered: { "@type": "Service", name: "Digital Console Rental", description: "Midas M32R, M32C, DL32, Allen & Heath C1500 and CDM48 digital mixing console rental" } },
+            { "@type": "Offer", itemOffered: { "@type": "Service", name: "Stage Piano Rental", description: "Nord Stage 3 weighted stage piano rental for live performance" } },
+            { "@type": "Offer", itemOffered: { "@type": "Service", name: "Audio Equipment Delivery Los Angeles", description: "Reliable equipment delivery and on-call support across Greater Los Angeles" } },
+          ],
+        },
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://parisbackline.com/#website",
+        url: "https://parisbackline.com",
+        name: "Paris Backline",
+        publisher: { "@id": "https://parisbackline.com/#business" },
+      },
+      {
+        "@type": "WebPage",
+        "@id": "https://parisbackline.com/#webpage",
+        url: "https://parisbackline.com",
+        name: "Los Angeles Backline Rental | Paris Backline",
+        isPartOf: { "@id": "https://parisbackline.com/#website" },
+        about: { "@id": "https://parisbackline.com/#business" },
+        description: "Professional backline and wireless audio equipment rental across Greater Los Angeles.",
+      },
+    ],
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* NAV */}
       <nav id="nav">
         <a href="#" className="nav-logo">PARIS BACKLINE</a>
@@ -122,7 +195,7 @@ export default function LandingPage() {
         <div className="hero-rule"></div>
         <p className="hero-label">Greater Los Angeles &nbsp;&middot;&nbsp; Wireless Specialists</p>
         <h1 className="hero-title">PARIS<br/>BACKLINE</h1>
-        <p className="hero-sub">Professional wireless systems and audio production equipment, available across Greater Los Angeles.</p>
+        <p className="hero-sub">Los Angeles backline rental — professional wireless systems and audio production equipment, available across Greater LA.</p>
         <div className="hero-actions">
           <a href="#catalog" className="btn-gold">View Catalog</a>
           <a href="#contact" className="btn-outline">Get in Touch</a>

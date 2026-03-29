@@ -1,4 +1,12 @@
 User-agent: *
 Allow: /
+Disallow: /dashboard
+Disallow: /bookings
+Disallow: /calendar
+Disallow: /equipment
+Disallow: /clients
+Disallow: /earnings
+Disallow: /login
+Disallow: /api/
 
-Sitemap: https://parisbackline.vercel.app/sitemap.xml
+Sitemap: https://parisbackline.com/sitemap.xml
