@@ -12,11 +12,12 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    const name = [body.manufacturer, body.model].filter(Boolean).join(" ") || "Unnamed";
     const equipment = await prisma.equipment.create({
       data: {
         manufacturer: body.manufacturer || null,
         model: body.model || null,
-        name: body.name,
+        name,
         category: body.category,
         owner: body.owner,
         quantity: body.quantity || 1,

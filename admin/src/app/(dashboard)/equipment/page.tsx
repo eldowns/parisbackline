@@ -22,7 +22,7 @@ export default function EquipmentPage() {
   const [equipment, setEquipment] = useState<EquipmentItem[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-  const [form, setForm] = useState({ manufacturer: "", model: "", name: "", category: "Wireless Mic", owner: "eric", quantity: 1, internalValue: 0, serialNumber: "", notes: "" });
+  const [form, setForm] = useState({ manufacturer: "", model: "", category: "Wireless Mic", owner: "eric", quantity: 1, internalValue: 0, serialNumber: "", notes: "" });
   const [filter, setFilter] = useState("");
   const [error, setError] = useState("");
 
@@ -31,14 +31,14 @@ export default function EquipmentPage() {
   }, []);
 
   function resetForm() {
-    setForm({ manufacturer: "", model: "", name: "", category: "Wireless Mic", owner: "eric", quantity: 1, internalValue: 0, serialNumber: "", notes: "" });
+    setForm({ manufacturer: "", model: "", category: "Wireless Mic", owner: "eric", quantity: 1, internalValue: 0, serialNumber: "", notes: "" });
     setEditId(null);
     setShowForm(false);
     setError("");
   }
 
   function startEdit(eq: EquipmentItem) {
-    setForm({ manufacturer: eq.manufacturer || "", model: eq.model || "", name: eq.name, category: eq.category, owner: eq.owner, quantity: eq.quantity, internalValue: eq.internalValue, serialNumber: eq.serialNumber || "", notes: eq.notes || "" });
+    setForm({ manufacturer: eq.manufacturer || "", model: eq.model || "", category: eq.category, owner: eq.owner, quantity: eq.quantity, internalValue: eq.internalValue, serialNumber: eq.serialNumber || "", notes: eq.notes || "" });
     setEditId(eq.id);
     setShowForm(true);
   }
@@ -126,10 +126,6 @@ export default function EquipmentPage() {
               <input value={form.model} onChange={(e) => setForm({ ...form, model: e.target.value })} className="w-full" placeholder="e.g., EW-DX" />
             </div>
             <div>
-              <label className="block text-text-secondary text-xs font-medium mb-1.5 uppercase tracking-wider">Name</label>
-              <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full" required placeholder="Display name" />
-            </div>
-            <div>
               <label className="block text-text-secondary text-xs font-medium mb-1.5 uppercase tracking-wider">Category</label>
               <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="w-full">
                 {categories.map((c) => <option key={c} value={c}>{c}</option>)}
@@ -174,9 +170,7 @@ export default function EquipmentPage() {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border text-text-muted text-xs uppercase tracking-wider">
-              <th className="text-left px-5 py-3 font-medium">Manufacturer</th>
-              <th className="text-left px-5 py-3 font-medium">Model</th>
-              <th className="text-left px-5 py-3 font-medium">Name</th>
+              <th className="text-left px-5 py-3 font-medium">Equipment</th>
               <th className="text-left px-5 py-3 font-medium">Category</th>
               <th className="text-left px-5 py-3 font-medium">Owner</th>
               <th className="text-center px-5 py-3 font-medium">Qty</th>
@@ -188,9 +182,9 @@ export default function EquipmentPage() {
           <tbody className="divide-y divide-border">
             {filtered.map((eq) => (
               <tr key={eq.id} className="hover:bg-bg-hover transition-colors">
-                <td className="px-5 py-3 text-text-secondary">{eq.manufacturer || "—"}</td>
-                <td className="px-5 py-3 text-text-secondary">{eq.model || "—"}</td>
-                <td className="px-5 py-3 font-medium">{eq.name}</td>
+                <td className="px-5 py-3">
+                  <span className="font-medium">{[eq.manufacturer, eq.model].filter(Boolean).join(" ") || eq.name}</span>
+                </td>
                 <td className="px-5 py-3 text-text-secondary">{eq.category}</td>
                 <td className="px-5 py-3">
                   <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
@@ -211,7 +205,7 @@ export default function EquipmentPage() {
               </tr>
             ))}
             {filtered.length === 0 && (
-              <tr><td colSpan={9} className="px-5 py-12 text-center text-text-muted">No equipment found</td></tr>
+              <tr><td colSpan={7} className="px-5 py-12 text-center text-text-muted">No equipment found</td></tr>
             )}
           </tbody>
         </table>

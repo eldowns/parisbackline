@@ -11,12 +11,13 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const body = await request.json();
+  const name = [body.manufacturer, body.model].filter(Boolean).join(" ") || "Unnamed";
   const equipment = await prisma.equipment.update({
     where: { id },
     data: {
-      manufacturer: body.manufacturer,
-      model: body.model,
-      name: body.name,
+      manufacturer: body.manufacturer || null,
+      model: body.model || null,
+      name,
       category: body.category,
       owner: body.owner,
       quantity: body.quantity || 1,
