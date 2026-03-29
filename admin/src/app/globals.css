@@ -21,7 +21,10 @@
 }
 
 body {
-  background: var(--color-bg-primary);
+  background:
+    radial-gradient(circle, rgba(255,255,255,0.035) 1px, transparent 1px),
+    var(--color-bg-primary);
+  background-size: 24px 24px;
   color: var(--color-text-primary);
   font-family: "Inter", system-ui, -apple-system, sans-serif;
   font-weight: 300;
