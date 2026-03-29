@@ -147,7 +147,7 @@ export default function LandingPage() {
       />
       {/* NAV */}
       <nav id="nav">
-        <a href="#" className="nav-logo">PARIS BACKLINE</a>
+        <a href="#" className="nav-logo"><span className="text-gold">PARIS</span> BACKLINE</a>
         <a href="#contact" className="nav-cta">Inquire</a>
       </nav>
 
@@ -194,7 +194,7 @@ export default function LandingPage() {
 
         <div className="hero-rule"></div>
         <p className="hero-label">Greater Los Angeles &nbsp;&middot;&nbsp; Wireless Specialists</p>
-        <h1 className="hero-title">PARIS<br/>BACKLINE</h1>
+        <h1 className="hero-title"><span className="text-gold">PARIS</span><br/>BACKLINE</h1>
         <p className="hero-sub">Los Angeles backline rental — professional wireless systems and audio production equipment, available across Greater LA.</p>
         <div className="hero-actions">
           <a href="#catalog" className="btn-gold">View Catalog</a>
