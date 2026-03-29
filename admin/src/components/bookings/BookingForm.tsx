@@ -209,7 +209,7 @@ export default function BookingForm({
   }
 
   const labelClass = "block text-text-secondary text-xs font-medium mb-1.5 uppercase tracking-wider";
-  const sectionClass = "bg-bg-secondary border border-border rounded-xl p-5 space-y-4";
+  const sectionClass = "bg-bg-secondary border border-border rounded-none p-5 space-y-4";
 
   return (
     <form onSubmit={handleSubmit} className="grid grid-cols-3 gap-6">

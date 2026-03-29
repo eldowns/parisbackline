@@ -5,7 +5,7 @@ import { format } from "date-fns";
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const [totalBookings, activeBookings, totalClients, totalEquipment, recentBookings] =
+  const [totalBookings, activeBookings, totalClients, totalEquipment, recentBookings, unpaidBookings, totalRevenue] =
     await Promise.all([
       prisma.booking.count(),
       prisma.booking.count({ where: { status: "confirmed" } }),
@@ -16,19 +16,17 @@ export default async function DashboardPage() {
         orderBy: { dateStart: "desc" },
         include: { client: true },
       }),
+      prisma.booking.findMany({
+        where: { invoicePaid: false, status: { not: "cancelled" } },
+        include: { client: true },
+        orderBy: { dateStart: "desc" },
+        take: 5,
+      }),
+      prisma.booking.aggregate({
+        _sum: { rentalFee: true, deliveryFee: true },
+        where: { status: { not: "cancelled" } },
+      }),
     ]);
-
-  const unpaidBookings = await prisma.booking.findMany({
-    where: { invoicePaid: false, status: { not: "cancelled" } },
-    include: { client: true },
-    orderBy: { dateStart: "desc" },
-    take: 5,
-  });
-
-  const totalRevenue = await prisma.booking.aggregate({
-    _sum: { rentalFee: true, deliveryFee: true },
-    where: { status: { not: "cancelled" } },
-  });
 
   const revenue = (totalRevenue._sum.rentalFee || 0) + (totalRevenue._sum.deliveryFee || 0);
 
@@ -56,7 +54,7 @@ export default async function DashboardPage() {
 
       <div className="grid grid-cols-4 gap-4 mb-8">
         {stats.map((s) => (
-          <div key={s.label} className="bg-bg-secondary border border-border rounded-xl p-5">
+          <div key={s.label} className="bg-bg-secondary border border-border rounded-none p-5">
             <p className="text-text-muted text-xs font-medium uppercase tracking-wider">{s.label}</p>
             <p className={`text-2xl font-bold mt-1 ${s.color}`}>{s.value}</p>
           </div>
@@ -64,7 +62,7 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-2 gap-6">
-        <div className="bg-bg-secondary border border-border rounded-xl">
+        <div className="bg-bg-secondary border border-border rounded-none">
           <div className="px-5 py-4 border-b border-border flex items-center justify-between">
             <h2 className="font-semibold text-sm">Recent Bookings</h2>
             <Link href="/bookings" className="text-accent text-xs hover:text-accent-hover">View all</Link>
@@ -100,7 +98,7 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        <div className="bg-bg-secondary border border-border rounded-xl">
+        <div className="bg-bg-secondary border border-border rounded-none">
           <div className="px-5 py-4 border-b border-border">
             <h2 className="font-semibold text-sm">Unpaid Invoices</h2>
           </div>

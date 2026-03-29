@@ -69,7 +69,7 @@ export default function ClientsPage() {
       </div>
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="bg-bg-secondary border border-border rounded-xl p-5 mb-6 space-y-4">
+        <form onSubmit={handleSubmit} className="bg-bg-secondary border border-border rounded-none p-5 mb-6 space-y-4">
           <h3 className="text-sm font-semibold">{editId ? "Edit Client" : "Add Client"}</h3>
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -102,7 +102,7 @@ export default function ClientsPage() {
         </form>
       )}
 
-      <div className="bg-bg-secondary border border-border rounded-xl overflow-hidden">
+      <div className="bg-bg-secondary border border-border rounded-none overflow-hidden">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border text-text-muted text-xs uppercase tracking-wider">

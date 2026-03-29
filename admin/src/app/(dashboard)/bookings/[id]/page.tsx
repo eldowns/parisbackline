@@ -64,7 +64,7 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
       <div className="grid grid-cols-3 gap-6">
         <div className="col-span-2 space-y-6">
           {/* Details */}
-          <div className="bg-bg-secondary border border-border rounded-xl p-5">
+          <div className="bg-bg-secondary border border-border rounded-none p-5">
             <h3 className="text-sm font-semibold mb-4">Details</h3>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
@@ -117,7 +117,7 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
           </div>
 
           {/* Admin Roles */}
-          <div className="bg-bg-secondary border border-border rounded-xl p-5">
+          <div className="bg-bg-secondary border border-border rounded-none p-5">
             <h3 className="text-sm font-semibold mb-4">Admin Roles</h3>
             <div className="grid grid-cols-4 gap-4">
               {[
@@ -138,7 +138,7 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
 
           {/* Equipment */}
           {booking.equipment.length > 0 && (
-            <div className="bg-bg-secondary border border-border rounded-xl p-5">
+            <div className="bg-bg-secondary border border-border rounded-none p-5">
               <h3 className="text-sm font-semibold mb-4">Equipment</h3>
               <div className="divide-y divide-border">
                 {booking.equipment.map((be) => (
@@ -164,7 +164,7 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
 
           {/* Sub-Rentals */}
           {booking.subRentals.length > 0 && (
-            <div className="bg-bg-secondary border border-border rounded-xl p-5">
+            <div className="bg-bg-secondary border border-border rounded-none p-5">
               <h3 className="text-sm font-semibold mb-4">Sub-Rentals</h3>
               <div className="divide-y divide-border">
                 {booking.subRentals.map((sr) => (
@@ -181,7 +181,7 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
           )}
 
           {booking.notes && (
-            <div className="bg-bg-secondary border border-border rounded-xl p-5">
+            <div className="bg-bg-secondary border border-border rounded-none p-5">
               <h3 className="text-sm font-semibold mb-2">Notes</h3>
               <p className="text-sm text-text-secondary whitespace-pre-wrap">{booking.notes}</p>
             </div>

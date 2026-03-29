@@ -98,8 +98,8 @@ export default function EquipmentPage() {
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={`text-xs font-medium px-3 py-1.5 rounded-full transition-colors cursor-pointer ${
-              filter === f ? "bg-accent text-white" : "bg-bg-tertiary text-text-secondary hover:text-text-primary border border-border"
+            className={`text-xs font-medium px-3 py-1.5 rounded-none transition-colors cursor-pointer ${
+              filter === f ? "bg-accent text-bg-primary" : "bg-bg-tertiary text-text-secondary hover:text-text-primary border border-border"
             }`}
           >
             {f === "" ? "All" : f.charAt(0).toUpperCase() + f.slice(1)}
@@ -192,7 +192,7 @@ export default function EquipmentPage() {
       )}
 
       {/* Table */}
-      <div className="bg-bg-secondary border border-border rounded-xl overflow-hidden">
+      <div className="bg-bg-secondary border border-border rounded-none overflow-hidden">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border text-text-muted text-xs uppercase tracking-wider">
@@ -212,7 +212,7 @@ export default function EquipmentPage() {
                 </td>
                 <td className="px-5 py-3 text-text-secondary">{eq.category}</td>
                 <td className="px-5 py-3">
-                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-none ${
                     eq.owner === "eric" ? "bg-eric/10 text-eric" :
                     eq.owner === "marko" ? "bg-marko/10 text-marko" :
                     "bg-accent/10 text-accent"

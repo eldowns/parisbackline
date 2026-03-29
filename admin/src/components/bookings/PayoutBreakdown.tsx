@@ -14,7 +14,7 @@ export default function PayoutBreakdown({
   const totalJob = rentalFee + deliveryFee;
 
   return (
-    <div className="bg-bg-secondary border border-border rounded-xl overflow-hidden">
+    <div className="bg-bg-secondary border border-border rounded-none overflow-hidden">
       <div className="px-5 py-4 border-b border-border bg-accent/5">
         <h3 className="text-sm font-semibold text-accent">Live Payout Calculator</h3>
         <p className="text-xs text-text-muted mt-0.5">Updates as you fill in the form</p>
@@ -44,11 +44,11 @@ export default function PayoutBreakdown({
             <span className="font-semibold">${payout.netRevenue.toFixed(2)}</span>
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <div className="bg-bg-tertiary rounded-lg p-2.5 text-center">
+            <div className="bg-bg-tertiary rounded-none p-2.5 text-center">
               <p className="text-text-muted text-xs">Gear Side</p>
               <p className="font-semibold">${payout.gearSide.toFixed(2)}</p>
             </div>
-            <div className="bg-bg-tertiary rounded-lg p-2.5 text-center">
+            <div className="bg-bg-tertiary rounded-none p-2.5 text-center">
               <p className="text-text-muted text-xs">Admin Side</p>
               <p className="font-semibold">${payout.adminSide.toFixed(2)}</p>
             </div>
