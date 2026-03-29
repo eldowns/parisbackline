@@ -30,12 +30,26 @@ body {
 #dot-grid {
   position: fixed;
   inset: 0;
-  background-image: radial-gradient(circle, rgba(255,255,255,0.225) 1px, transparent 1px);
+  background-image: radial-gradient(circle, rgba(255,255,255,0.075) 1px, transparent 1px);
   background-size: 22px 22px;
   pointer-events: none;
   z-index: 0;
   -webkit-mask-image: radial-gradient(ellipse 100% 80% at 50% 50%, rgba(0,0,0,0.8) 20%, transparent 75%);
   mask-image: radial-gradient(ellipse 100% 80% at 50% 50%, rgba(0,0,0,0.8) 20%, transparent 75%);
+}
+
+.dash-card {
+  transition: border-color 0.2s, background-color 0.2s;
+}
+.dash-card:hover {
+  border-color: rgba(200,164,74,0.3);
+  background-color: rgba(200,164,74,0.03);
+}
+
+.sidebar-bg {
+  background: rgba(9,9,15,0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 h1, h2, h3 {

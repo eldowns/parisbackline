@@ -22,7 +22,7 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="w-60 border-r border-border min-h-screen flex flex-col" style={{ background: "rgba(9,9,15,0.75)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }}>
+    <aside className="w-60 border-r border-border min-h-screen flex flex-col sidebar-bg">
       <div className="p-6 border-b border-border">
         <h1 className="text-xl tracking-widest" style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.14em" }}>
           PARIS <span className="text-accent">BACKLINE</span>

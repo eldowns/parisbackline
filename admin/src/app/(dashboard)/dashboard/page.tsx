@@ -128,7 +128,7 @@ export default async function DashboardPage() {
 
       {/* Revenue Cards */}
       <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-bg-secondary border border-border p-5">
+        <div className="bg-bg-secondary border border-border p-5 dash-card">
           <p className="text-text-muted text-[0.65rem] font-semibold uppercase tracking-[0.18em] mb-1">Month to Date</p>
           <p className="text-2xl font-bold text-accent" style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.02em" }}>
             ${mtdTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -138,7 +138,7 @@ export default async function DashboardPage() {
             <span>${mtdAvg.toFixed(0)} avg</span>
           </div>
         </div>
-        <div className="bg-bg-secondary border border-border p-5">
+        <div className="bg-bg-secondary border border-border p-5 dash-card">
           <p className="text-text-muted text-[0.65rem] font-semibold uppercase tracking-[0.18em] mb-1">Year to Date</p>
           <p className="text-2xl font-bold text-success" style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.02em" }}>
             ${ytdTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -148,7 +148,7 @@ export default async function DashboardPage() {
             <span>${ytdAvg.toFixed(0)} avg</span>
           </div>
         </div>
-        <div className="bg-bg-secondary border border-border p-5">
+        <div className="bg-bg-secondary border border-border p-5 dash-card">
           <p className="text-text-muted text-[0.65rem] font-semibold uppercase tracking-[0.18em] mb-1">All Time</p>
           <p className="text-2xl font-bold text-text-primary" style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.02em" }}>
             ${allTimeTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -162,27 +162,27 @@ export default async function DashboardPage() {
 
       {/* Stats Row */}
       <div className="grid grid-cols-6 gap-3 mb-6">
-        <div className="bg-bg-secondary border border-border p-4 text-center">
+        <div className="bg-bg-secondary border border-border p-4 text-center dash-card">
           <p className="text-text-muted text-[0.6rem] uppercase tracking-wider mb-1">Active</p>
           <p className="text-xl font-bold text-eric" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>{activeBookings}</p>
         </div>
-        <div className="bg-bg-secondary border border-border p-4 text-center">
+        <div className="bg-bg-secondary border border-border p-4 text-center dash-card">
           <p className="text-text-muted text-[0.6rem] uppercase tracking-wider mb-1">Completed</p>
           <p className="text-xl font-bold text-success" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>{completedBookings}</p>
         </div>
-        <div className="bg-bg-secondary border border-border p-4 text-center">
+        <div className="bg-bg-secondary border border-border p-4 text-center dash-card">
           <p className="text-text-muted text-[0.6rem] uppercase tracking-wider mb-1">Cancelled</p>
           <p className="text-xl font-bold text-danger" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>{cancelledBookings}</p>
         </div>
-        <div className="bg-bg-secondary border border-border p-4 text-center">
+        <div className="bg-bg-secondary border border-border p-4 text-center dash-card">
           <p className="text-text-muted text-[0.6rem] uppercase tracking-wider mb-1">Equipment</p>
           <p className="text-xl font-bold text-marko" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>{totalEquipment}</p>
         </div>
-        <div className="bg-bg-secondary border border-border p-4 text-center">
+        <div className="bg-bg-secondary border border-border p-4 text-center dash-card">
           <p className="text-text-muted text-[0.6rem] uppercase tracking-wider mb-1">Unpaid</p>
           <p className="text-xl font-bold text-warning" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>{unpaidBookings.length}</p>
         </div>
-        <div className="bg-bg-secondary border border-border p-4 text-center">
+        <div className="bg-bg-secondary border border-border p-4 text-center dash-card">
           <p className="text-text-muted text-[0.6rem] uppercase tracking-wider mb-1">Outstanding</p>
           <p className="text-xl font-bold text-warning" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>${unpaidTotal.toLocaleString()}</p>
         </div>
@@ -190,7 +190,7 @@ export default async function DashboardPage() {
 
       {/* MTD vs YTD Breakdown */}
       <div className="grid grid-cols-2 gap-4 mb-6">
-        <div className="bg-bg-secondary border border-border p-5">
+        <div className="bg-bg-secondary border border-border p-5 dash-card">
           <p className="text-text-muted text-[0.65rem] font-semibold uppercase tracking-[0.18em] mb-3">MTD Breakdown</p>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
@@ -207,7 +207,7 @@ export default async function DashboardPage() {
             </div>
           </div>
         </div>
-        <div className="bg-bg-secondary border border-border p-5">
+        <div className="bg-bg-secondary border border-border p-5 dash-card">
           <p className="text-text-muted text-[0.65rem] font-semibold uppercase tracking-[0.18em] mb-3">YTD Breakdown</p>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
@@ -228,7 +228,7 @@ export default async function DashboardPage() {
 
       <div className="grid grid-cols-3 gap-4">
         {/* Recent Bookings */}
-        <div className="bg-bg-secondary border border-border">
+        <div className="bg-bg-secondary border border-border dash-card">
           <div className="px-5 py-4 border-b border-border flex items-center justify-between">
             <p className="text-text-muted text-[0.65rem] font-semibold uppercase tracking-[0.18em]">Recent Bookings</p>
             <Link href="/bookings" className="text-accent text-xs hover:text-accent-hover">View all</Link>
@@ -241,7 +241,7 @@ export default async function DashboardPage() {
               <Link
                 key={b.id}
                 href={`/bookings/${b.id}`}
-                className="flex items-center justify-between px-5 py-3 hover:bg-bg-hover transition-colors"
+                className="flex items-center justify-between px-5 py-3"
               >
                 <div>
                   <p className="text-sm font-medium">{b.client.name}</p>
@@ -256,7 +256,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Unpaid Invoices */}
-        <div className="bg-bg-secondary border border-border">
+        <div className="bg-bg-secondary border border-border dash-card">
           <div className="px-5 py-4 border-b border-border">
             <p className="text-text-muted text-[0.65rem] font-semibold uppercase tracking-[0.18em]">Unpaid Invoices</p>
           </div>
@@ -268,7 +268,7 @@ export default async function DashboardPage() {
               <Link
                 key={b.id}
                 href={`/bookings/${b.id}`}
-                className="flex items-center justify-between px-5 py-3 hover:bg-bg-hover transition-colors"
+                className="flex items-center justify-between px-5 py-3"
               >
                 <div>
                   <p className="text-sm font-medium">{b.client.name}</p>
@@ -288,7 +288,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Top Clients */}
-        <div className="bg-bg-secondary border border-border">
+        <div className="bg-bg-secondary border border-border dash-card">
           <div className="px-5 py-4 border-b border-border">
             <p className="text-text-muted text-[0.65rem] font-semibold uppercase tracking-[0.18em]">Top Clients</p>
           </div>
