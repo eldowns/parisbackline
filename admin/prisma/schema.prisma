@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+}
+
+model Client {
+  id        String    @id @default(cuid())
+  name      String
+  email     String?
+  phone     String?
+  company   String?
+  notes     String?
+  createdAt DateTime  @default(now())
+  bookings  Booking[]
+}
+
+model Equipment {
+  id            String             @id @default(cuid())
+  name          String
+  category      String
+  owner         String
+  internalValue Float
+  serialNumber  String?
+  notes         String?
+  active        Boolean            @default(true)
+  createdAt     DateTime           @default(now())
+  bookingItems  BookingEquipment[]
+}
+
+model Booking {
+  id              String             @id @default(cuid())
+  clientId        String
+  client          Client             @relation(fields: [clientId], references: [id])
+  description     String?
+  dateStart       DateTime
+  dateEnd         DateTime
+  rentalFee       Float
+  deliveryFee     Float              @default(0)
+  deliveryBy      String?
+  referralFee     Float              @default(0)
+  referralName    String?
+  leadPartner     String
+  commPartner     String
+  invoicePartner  String
+  accountPartner  String
+  invoiceSent     Boolean            @default(false)
+  invoicePaid     Boolean            @default(false)
+  notes           String?
+  status          String             @default("confirmed")
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  equipment       BookingEquipment[]
+  subRentals      SubRental[]
+}
+
+model BookingEquipment {
+  id          String    @id @default(cuid())
+  bookingId   String
+  booking     Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  equipmentId String
+  equipment   Equipment @relation(fields: [equipmentId], references: [id])
+  quantity    Int       @default(1)
+}
+
+model SubRental {
+  id          String  @id @default(cuid())
+  bookingId   String
+  booking     Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  provider    String
+  description String
+  cost        Float
+}
