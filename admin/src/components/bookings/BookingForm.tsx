@@ -84,6 +84,7 @@ export default function BookingForm({
   );
 
   const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState("");
   const [showNewClient, setShowNewClient] = useState(false);
   const [newClient, setNewClient] = useState({ name: "", email: "", phone: "", company: "" });
 
@@ -165,20 +166,28 @@ export default function BookingForm({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
+    setFormError("");
 
     const url = isEdit ? `/api/bookings/${initialData!.id}` : "/api/bookings";
     const method = isEdit ? "PUT" : "POST";
 
-    const res = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
 
-    if (res.ok) {
-      const booking = await res.json();
-      router.push(`/bookings/${booking.id}`);
-      router.refresh();
+      if (res.ok) {
+        const booking = await res.json();
+        router.push(`/bookings/${booking.id}`);
+        router.refresh();
+      } else {
+        const data = await res.json();
+        setFormError(data.error || "Failed to save booking");
+      }
+    } catch (err) {
+      setFormError(String(err));
     }
     setSaving(false);
   }
@@ -190,6 +199,11 @@ export default function BookingForm({
   return (
     <form onSubmit={handleSubmit} className="grid grid-cols-3 gap-6">
       <div className="col-span-2 space-y-6">
+        {formError && (
+          <div className="border border-danger/30 text-danger text-sm p-4" style={{ borderRadius: "1px", background: "rgba(239,68,68,0.05)" }}>
+            {formError}
+          </div>
+        )}
         {/* Client & Dates */}
         <div className={sectionClass}>
           <h3 className="text-sm font-semibold text-text-primary mb-2">Booking Details</h3>

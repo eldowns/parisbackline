@@ -20,43 +20,48 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
+  try {
+    const body = await request.json();
 
-  const booking = await prisma.booking.create({
-    data: {
-      clientId: body.clientId,
-      description: body.description,
-      dateStart: new Date(body.dateStart),
-      dateEnd: new Date(body.dateEnd),
-      rentalFee: body.rentalFee,
-      deliveryFee: body.deliveryFee || 0,
-      deliveryBy: body.deliveryBy,
-      referralFee: body.referralFee || 0,
-      referralName: body.referralName,
-      leadPartner: body.leadPartner,
-      commPartner: body.commPartner,
-      invoicePartner: body.invoicePartner,
-      accountPartner: body.accountPartner,
-      invoiceSent: body.invoiceSent || false,
-      invoicePaid: body.invoicePaid || false,
-      notes: body.notes,
-      status: body.status || "confirmed",
-      equipment: {
-        create: (body.equipment || []).map((e: { equipmentId: string; quantity: number }) => ({
-          equipmentId: e.equipmentId,
-          quantity: e.quantity || 1,
-        })),
+    const booking = await prisma.booking.create({
+      data: {
+        clientId: body.clientId,
+        description: body.description,
+        dateStart: new Date(body.dateStart),
+        dateEnd: new Date(body.dateEnd),
+        rentalFee: body.rentalFee,
+        deliveryFee: body.deliveryFee || 0,
+        deliveryBy: body.deliveryBy || null,
+        referralFee: body.referralFee || 0,
+        referralName: body.referralName || null,
+        leadPartner: body.leadPartner,
+        commPartner: body.commPartner,
+        invoicePartner: body.invoicePartner,
+        accountPartner: body.accountPartner,
+        invoiceSent: body.invoiceSent || false,
+        invoicePaid: body.invoicePaid || false,
+        notes: body.notes || null,
+        status: body.status || "confirmed",
+        equipment: {
+          create: (body.equipment || []).map((e: { equipmentId: string; quantity: number }) => ({
+            equipmentId: e.equipmentId,
+            quantity: e.quantity || 1,
+          })),
+        },
+        subRentals: {
+          create: (body.subRentals || []).map((s: { provider: string; description: string; cost: number }) => ({
+            provider: s.provider,
+            description: s.description,
+            cost: s.cost,
+          })),
+        },
       },
-      subRentals: {
-        create: (body.subRentals || []).map((s: { provider: string; description: string; cost: number }) => ({
-          provider: s.provider,
-          description: s.description,
-          cost: s.cost,
-        })),
-      },
-    },
-    include: { client: true, equipment: { include: { equipment: true } }, subRentals: true },
-  });
+      include: { client: true, equipment: { include: { equipment: true } }, subRentals: true },
+    });
 
-  return NextResponse.json(booking, { status: 201 });
+    return NextResponse.json(booking, { status: 201 });
+  } catch (err) {
+    console.error("Booking create error:", err);
+    return NextResponse.json({ error: String(err) }, { status: 500 });
+  }
 }

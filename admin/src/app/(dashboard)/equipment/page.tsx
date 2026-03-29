@@ -94,7 +94,7 @@ export default function EquipmentPage() {
 
       {/* Filter */}
       <div className="flex gap-2 mb-4">
-        {["", "eric", "marko", "partnership"].map((f) => (
+        {["", "eric", "marko"].map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
@@ -107,62 +107,88 @@ export default function EquipmentPage() {
         ))}
       </div>
 
-      {/* Add/Edit Form */}
+      {/* Modal */}
       {showForm && (
-        <form onSubmit={handleSubmit} className="bg-bg-secondary border border-border rounded-xl p-5 mb-6 space-y-4">
-          <h3 className="text-sm font-semibold">{editId ? "Edit Equipment" : "Add Equipment"}</h3>
-          {error && (
-            <div className="border border-danger/30 text-danger text-xs p-3" style={{ borderRadius: "1px", background: "rgba(239,68,68,0.05)" }}>
-              {error}
+        <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={resetForm}>
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          <form
+            onSubmit={handleSubmit}
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-xl border border-border p-6 space-y-5"
+            style={{ borderRadius: "1px", background: "#111118" }}
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg tracking-wider" style={{ fontFamily: "'Bebas Neue', sans-serif" }}>
+                {editId ? "EDIT EQUIPMENT" : "ADD EQUIPMENT"}
+              </h3>
+              <button type="button" onClick={resetForm} className="text-text-muted hover:text-text-primary cursor-pointer">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
-          )}
-          <div className="grid grid-cols-4 gap-4">
-            <div>
-              <label className="block text-text-secondary text-xs font-medium mb-1.5 uppercase tracking-wider">Manufacturer</label>
-              <input value={form.manufacturer} onChange={(e) => setForm({ ...form, manufacturer: e.target.value })} className="w-full" placeholder="e.g., Sennheiser" />
+
+            {error && (
+              <div className="border border-danger/30 text-danger text-xs p-3" style={{ borderRadius: "1px", background: "rgba(239,68,68,0.05)" }}>
+                {error}
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-text-muted text-[0.65rem] font-semibold mb-2 uppercase tracking-[0.18em]">Manufacturer</label>
+                <input value={form.manufacturer} onChange={(e) => setForm({ ...form, manufacturer: e.target.value })} className="w-full" placeholder="e.g., Sennheiser" />
+              </div>
+              <div>
+                <label className="block text-text-muted text-[0.65rem] font-semibold mb-2 uppercase tracking-[0.18em]">Model</label>
+                <input value={form.model} onChange={(e) => setForm({ ...form, model: e.target.value })} className="w-full" placeholder="e.g., EW-DX" />
+              </div>
+              <div>
+                <label className="block text-text-muted text-[0.65rem] font-semibold mb-2 uppercase tracking-[0.18em]">Category</label>
+                <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="w-full">
+                  {categories.map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-text-muted text-[0.65rem] font-semibold mb-2 uppercase tracking-[0.18em]">Owner</label>
+                <select value={form.owner} onChange={(e) => setForm({ ...form, owner: e.target.value })} className="w-full">
+                  <option value="eric">Eric</option>
+                  <option value="marko">Marko</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-text-muted text-[0.65rem] font-semibold mb-2 uppercase tracking-[0.18em]">Quantity</label>
+                <input type="number" min={1} value={form.quantity} onChange={(e) => setForm({ ...form, quantity: parseInt(e.target.value) || 1 })} className="w-full" required />
+              </div>
+              <div>
+                <label className="block text-text-muted text-[0.65rem] font-semibold mb-2 uppercase tracking-[0.18em]">Internal Value ($)</label>
+                <input type="number" step="0.01" value={form.internalValue || ""} onChange={(e) => setForm({ ...form, internalValue: parseFloat(e.target.value) || 0 })} className="w-full" required />
+              </div>
+              <div>
+                <label className="block text-text-muted text-[0.65rem] font-semibold mb-2 uppercase tracking-[0.18em]">Notes</label>
+                <input value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="w-full" placeholder="Optional" />
+              </div>
             </div>
-            <div>
-              <label className="block text-text-secondary text-xs font-medium mb-1.5 uppercase tracking-wider">Model</label>
-              <input value={form.model} onChange={(e) => setForm({ ...form, model: e.target.value })} className="w-full" placeholder="e.g., EW-DX" />
+
+            <div className="flex gap-3 pt-2">
+              <button
+                type="submit"
+                className="flex-1 bg-accent text-bg-primary text-[0.72rem] font-semibold uppercase tracking-[0.14em] py-3 cursor-pointer hover:brightness-110 transition-all"
+                style={{ borderRadius: "1px" }}
+              >
+                {editId ? "Update Equipment" : "Add Equipment"}
+              </button>
+              <button
+                type="button"
+                onClick={resetForm}
+                className="px-6 border border-border text-text-secondary text-[0.72rem] font-semibold uppercase tracking-[0.14em] py-3 cursor-pointer hover:text-text-primary transition-colors"
+                style={{ borderRadius: "1px" }}
+              >
+                Cancel
+              </button>
             </div>
-            <div>
-              <label className="block text-text-secondary text-xs font-medium mb-1.5 uppercase tracking-wider">Category</label>
-              <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="w-full">
-                {categories.map((c) => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-text-secondary text-xs font-medium mb-1.5 uppercase tracking-wider">Owner</label>
-              <select value={form.owner} onChange={(e) => setForm({ ...form, owner: e.target.value })} className="w-full">
-                <option value="eric">Eric</option>
-                <option value="marko">Marko</option>
-                <option value="partnership">Partnership</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-text-secondary text-xs font-medium mb-1.5 uppercase tracking-wider">Quantity</label>
-              <input type="number" min={1} value={form.quantity} onChange={(e) => setForm({ ...form, quantity: parseInt(e.target.value) || 1 })} className="w-full" required />
-            </div>
-            <div>
-              <label className="block text-text-secondary text-xs font-medium mb-1.5 uppercase tracking-wider">Internal Value ($)</label>
-              <input type="number" step="0.01" value={form.internalValue || ""} onChange={(e) => setForm({ ...form, internalValue: parseFloat(e.target.value) || 0 })} className="w-full" required />
-            </div>
-            <div>
-              <label className="block text-text-secondary text-xs font-medium mb-1.5 uppercase tracking-wider">Serial Number</label>
-              <input value={form.serialNumber} onChange={(e) => setForm({ ...form, serialNumber: e.target.value })} className="w-full" placeholder="Optional" />
-            </div>
-          </div>
-          <div>
-            <label className="block text-text-secondary text-xs font-medium mb-1.5 uppercase tracking-wider">Notes</label>
-            <input value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="w-full" placeholder="Optional" />
-          </div>
-          <div className="flex gap-3">
-            <button type="submit" className="bg-accent hover:bg-accent-hover text-white text-sm font-medium px-4 py-2 rounded-lg cursor-pointer">
-              {editId ? "Update" : "Add"}
-            </button>
-            <button type="button" onClick={resetForm} className="text-text-secondary text-sm hover:text-text-primary cursor-pointer">Cancel</button>
-          </div>
-        </form>
+          </form>
+        </div>
       )}
 
       {/* Table */}
@@ -175,7 +201,6 @@ export default function EquipmentPage() {
               <th className="text-left px-5 py-3 font-medium">Owner</th>
               <th className="text-center px-5 py-3 font-medium">Qty</th>
               <th className="text-right px-5 py-3 font-medium">Value</th>
-              <th className="text-left px-5 py-3 font-medium">Serial</th>
               <th className="text-right px-5 py-3 font-medium">Actions</th>
             </tr>
           </thead>
@@ -197,7 +222,6 @@ export default function EquipmentPage() {
                 </td>
                 <td className="px-5 py-3 text-center">{eq.quantity}</td>
                 <td className="px-5 py-3 text-right font-semibold">${eq.internalValue.toLocaleString()}</td>
-                <td className="px-5 py-3 text-text-muted text-xs font-mono">{eq.serialNumber || "—"}</td>
                 <td className="px-5 py-3 text-right">
                   <button onClick={() => startEdit(eq)} className="text-accent hover:text-accent-hover text-xs font-medium mr-3 cursor-pointer">Edit</button>
                   <button onClick={() => handleDeactivate(eq.id)} className="text-danger/60 hover:text-danger text-xs font-medium cursor-pointer">Remove</button>
@@ -205,7 +229,7 @@ export default function EquipmentPage() {
               </tr>
             ))}
             {filtered.length === 0 && (
-              <tr><td colSpan={7} className="px-5 py-12 text-center text-text-muted">No equipment found</td></tr>
+              <tr><td colSpan={6} className="px-5 py-12 text-center text-text-muted">No equipment found</td></tr>
             )}
           </tbody>
         </table>
