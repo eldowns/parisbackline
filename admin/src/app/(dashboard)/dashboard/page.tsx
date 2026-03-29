@@ -88,7 +88,7 @@ export default async function DashboardPage() {
                 <div className="text-right">
                   <p className="text-sm font-semibold">${b.rentalFee.toLocaleString()}</p>
                   <span className={`text-xs px-2 py-0.5 rounded-full ${
-                    b.status === "confirmed" ? "bg-accent/10 text-accent" :
+                    b.status === "confirmed" ? "bg-eric/10 text-eric" :
                     b.status === "completed" ? "bg-success/10 text-success" :
                     "bg-danger/10 text-danger"
                   }`}>

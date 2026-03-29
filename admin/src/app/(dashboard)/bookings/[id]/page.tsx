@@ -70,7 +70,7 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
               <div>
                 <p className="text-text-muted text-xs uppercase tracking-wider mb-1">Status</p>
                 <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                  booking.status === "confirmed" ? "bg-accent/10 text-accent" :
+                  booking.status === "confirmed" ? "bg-eric/10 text-eric" :
                   booking.status === "completed" ? "bg-success/10 text-success" :
                   "bg-danger/10 text-danger"
                 }`}>

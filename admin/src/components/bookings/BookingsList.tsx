@@ -54,8 +54,19 @@ function BookingRow({ b }: { b: BookingData }) {
     }
   }, [open]);
 
+  // Determine display status — auto "in progress" if today is within rental period
+  const today = new Date();
+  const start = new Date(b.dateStart);
+  const end = new Date(b.dateEnd);
+  const todayUTC = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+  const startUTC = Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate());
+  const endUTC = Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate());
+  const isInProgress = b.status === "confirmed" && todayUTC >= startUTC && todayUTC <= endUTC;
+
+  const displayStatus = isInProgress ? "in progress" : b.status;
   const statusColor =
-    b.status === "confirmed" ? "text-accent" :
+    isInProgress ? "text-accent" :
+    b.status === "confirmed" ? "text-eric" :
     b.status === "completed" ? "text-success" :
     "text-danger";
 
@@ -82,7 +93,7 @@ function BookingRow({ b }: { b: BookingData }) {
           </span>
           <span className="text-sm font-semibold w-24 text-right">${b.rentalFee.toLocaleString()}</span>
           <span className={`text-xs font-medium uppercase tracking-wider ${statusColor}`}>
-            {b.status}
+            {displayStatus}
           </span>
         </div>
 
