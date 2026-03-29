@@ -73,8 +73,11 @@ function BookingRow({ b }: { b: BookingData }) {
   return (
     <div className="border-b border-border">
       {/* Summary row */}
-      <div className="flex items-center px-5 py-4 hover:bg-bg-hover transition-colors cursor-pointer" onClick={() => setOpen(!open)}>
-        <div className="mr-3 text-text-muted">
+      <div className="flex items-center px-5 py-4 hover:bg-bg-hover transition-colors cursor-pointer">
+        <div
+          className="mr-3 text-text-muted hover:text-text-primary"
+          onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
+        >
           <svg
             className={`w-4 h-4 transition-transform ${open ? "rotate-90" : ""}`}
             fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
@@ -83,7 +86,7 @@ function BookingRow({ b }: { b: BookingData }) {
           </svg>
         </div>
 
-        <div className="flex-1 min-w-0 flex items-center gap-6">
+        <Link href={`/bookings/${b.id}/edit`} className="flex-1 min-w-0 flex items-center gap-6">
           <span className="font-medium text-sm w-40 truncate">{b.client.name}</span>
           <span className="text-text-secondary text-sm w-36">
             {formatDate(b.dateStart)} – {formatDate(b.dateEnd)}
@@ -92,14 +95,6 @@ function BookingRow({ b }: { b: BookingData }) {
           <span className={`text-xs font-medium uppercase tracking-wider ${statusColor}`}>
             {displayStatus}
           </span>
-        </div>
-
-        <Link
-          href={`/bookings/${b.id}/edit`}
-          className="text-accent hover:text-accent-hover text-xs font-medium ml-4 cursor-pointer"
-          onClick={(e) => e.stopPropagation()}
-        >
-          Edit
         </Link>
       </div>
 
@@ -243,7 +238,6 @@ export default function BookingsList({ bookings }: { bookings: BookingData[] | n
             <span className="w-24 text-right">Total</span>
             <span>Status</span>
           </div>
-          <span className="ml-4 w-8" />
         </div>
         {bookings === null && (
           <div className="px-5 py-4 text-center text-text-muted text-sm animate-pulse">Loading bookings...</div>
