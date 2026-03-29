@@ -34,8 +34,6 @@ export default async function EditBookingPage({ params }: { params: Promise<{ id
     commPartner: booking.commPartner,
     invoicePartner: booking.invoicePartner,
     accountPartner: booking.accountPartner,
-    invoiceSent: booking.invoiceSent,
-    invoicePaid: booking.invoicePaid,
     notes: booking.notes || "",
     status: booking.status,
     equipment: booking.equipment.map((be) => ({

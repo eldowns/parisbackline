@@ -87,7 +87,7 @@ export default function EquipmentPage() {
         </div>
         <button
           onClick={() => { resetForm(); setShowForm(true); }}
-          className="bg-accent hover:brightness-110 text-bg-primary text-sm font-medium px-4 py-2.5 transition-colors cursor-pointer"
+          className="bg-accent hover:brightness-110 text-bg-primary text-[0.72rem] font-semibold uppercase tracking-[0.14em] px-4 py-2.5 transition-colors cursor-pointer"
         >
           + Add Equipment
         </button>

@@ -21,8 +21,6 @@ interface BookingData {
   commPartner: string;
   invoicePartner: string;
   accountPartner: string;
-  invoiceSent: boolean;
-  invoicePaid: boolean;
   status: string;
   notes: string | null;
   equipment: {
@@ -34,8 +32,22 @@ interface BookingData {
   subRentals: { provider: string; description: string; cost: number }[];
 }
 
+const STATUS_LABELS: Record<string, string> = {
+  draft: "Draft",
+  confirmed: "Confirmed",
+  in_progress: "In Progress",
+  completed: "Complete",
+  invoice_sent: "Invoice Sent",
+  paid: "Paid",
+  cancelled: "Cancelled",
+};
+
 function capitalize(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function statusLabel(s: string) {
+  return STATUS_LABELS[s] || capitalize(s);
 }
 
 function formatDate(d: string) {
@@ -56,21 +68,15 @@ function BookingRow({ b }: { b: BookingData }) {
     }
   }, [open]);
 
-  // Determine display status — auto "in progress" if today is within rental period
-  const today = new Date();
-  const start = new Date(b.dateStart);
-  const end = new Date(b.dateEnd);
-  const todayUTC = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
-  const startUTC = Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate());
-  const endUTC = Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate());
-  const isInProgress = b.status === "confirmed" && todayUTC >= startUTC && todayUTC <= endUTC;
-
-  const displayStatus = isInProgress ? "in progress" : b.status;
   const statusColor =
-    isInProgress ? "text-accent" :
+    b.status === "draft" ? "text-text-muted" :
     b.status === "confirmed" ? "text-eric" :
+    b.status === "in_progress" ? "text-accent" :
     b.status === "completed" ? "text-success" :
-    "text-danger";
+    b.status === "invoice_sent" ? "text-warning" :
+    b.status === "paid" ? "text-success" :
+    b.status === "cancelled" ? "text-danger" :
+    "text-text-primary";
 
   return (
     <div className="border-b border-border">
@@ -98,13 +104,10 @@ function BookingRow({ b }: { b: BookingData }) {
           </span>
           <span className="text-sm font-semibold w-24 text-right">${(b.rentalFee + b.deliveryFee).toLocaleString()}</span>
           <span className={`text-xs font-medium uppercase tracking-wider ${statusColor}`}>
-            {displayStatus}
+            {statusLabel(b.status)}
           </span>
         </Link>
 
-        <span className={`text-xs ml-4 whitespace-nowrap ${b.invoiceSent ? "text-success" : "text-danger"}`}>
-          {b.invoiceSent ? "Invoice sent" : "Invoice not sent"}
-        </span>
       </div>
 
       {/* Mobile card layout */}
@@ -118,11 +121,8 @@ function BookingRow({ b }: { b: BookingData }) {
               <span className="text-text-muted">|</span>
               <span className="font-semibold text-text-primary">${(b.rentalFee + b.deliveryFee).toLocaleString()}</span>
               <span className="text-text-muted">|</span>
-              <span className={`font-medium uppercase tracking-wider ${statusColor}`}>{displayStatus}</span>
+              <span className={`font-medium uppercase tracking-wider ${statusColor}`}>{statusLabel(b.status)}</span>
             </div>
-            <p className={`text-xs mt-1 ${b.invoiceSent ? "text-success" : "text-danger"}`}>
-              {b.invoiceSent ? "Invoice sent" : "Invoice not sent"}
-            </p>
           </Link>
           <div
             className="ml-2 mt-1 text-text-muted hover:text-text-primary"
@@ -224,18 +224,6 @@ function BookingRow({ b }: { b: BookingData }) {
                 </div>
               )}
 
-              <div>
-                <p className="text-text-muted text-[0.65rem] font-semibold uppercase tracking-[0.18em] mb-1">Invoice</p>
-                <p className="text-text-secondary">
-                  {b.invoicePaid ? (
-                    <span className="text-success">Paid</span>
-                  ) : b.invoiceSent ? (
-                    <span className="text-warning">Sent, unpaid</span>
-                  ) : (
-                    <span className="text-danger">Not sent</span>
-                  )}
-                </p>
-              </div>
             </div>
           </div>
 
@@ -264,17 +252,12 @@ function BookingRow({ b }: { b: BookingData }) {
 export default function BookingsList({ bookings }: { bookings: BookingData[] | null }) {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const [invoiceFilter, setInvoiceFilter] = useState("");
 
   const filtered = bookings?.filter((b) => {
     const q = search.toLowerCase();
     const matchesSearch = !q || (b.client.company || b.client.name).toLowerCase().includes(q) || b.client.name.toLowerCase().includes(q);
     const matchesStatus = !statusFilter || b.status === statusFilter;
-    const matchesInvoice = !invoiceFilter ||
-      (invoiceFilter === "paid" && b.invoicePaid) ||
-      (invoiceFilter === "sent" && b.invoiceSent && !b.invoicePaid) ||
-      (invoiceFilter === "unsent" && !b.invoiceSent);
-    return matchesSearch && matchesStatus && matchesInvoice;
+    return matchesSearch && matchesStatus;
   });
 
   return (
@@ -286,7 +269,7 @@ export default function BookingsList({ bookings }: { bookings: BookingData[] | n
         </div>
         <Link
           href="/bookings/new"
-          className="bg-accent hover:brightness-110 text-bg-primary text-sm font-medium px-4 py-2.5 transition-colors cursor-pointer"
+          className="bg-accent hover:brightness-110 text-bg-primary text-[0.72rem] font-semibold uppercase tracking-[0.14em] px-4 py-2.5 transition-colors cursor-pointer"
           style={{ borderRadius: "1px" }}
         >
           + New Booking
@@ -304,15 +287,13 @@ export default function BookingsList({ bookings }: { bookings: BookingData[] | n
         />
         <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="w-full md:w-auto">
           <option value="">All Statuses</option>
+          <option value="draft">Draft</option>
           <option value="confirmed">Confirmed</option>
-          <option value="completed">Completed</option>
-          <option value="cancelled">Cancelled</option>
-        </select>
-        <select value={invoiceFilter} onChange={(e) => setInvoiceFilter(e.target.value)} className="w-full md:w-auto">
-          <option value="">All Invoices</option>
+          <option value="in_progress">In Progress</option>
+          <option value="completed">Complete</option>
+          <option value="invoice_sent">Invoice Sent</option>
           <option value="paid">Paid</option>
-          <option value="sent">Sent, Unpaid</option>
-          <option value="unsent">Not Sent</option>
+          <option value="cancelled">Cancelled</option>
         </select>
       </div>
 

@@ -89,7 +89,7 @@ export default function CalendarPage() {
           </button>
           <Link
             href="/bookings/new"
-            className="bg-accent hover:brightness-110 text-bg-primary text-sm font-medium px-4 py-2 rounded-none transition-colors ml-2"
+            className="bg-accent hover:brightness-110 text-bg-primary text-[0.72rem] font-semibold uppercase tracking-[0.14em] px-4 py-2 rounded-none transition-colors ml-2"
           >
             + New Booking
           </Link>
@@ -131,8 +131,12 @@ export default function CalendarPage() {
                       key={b.id}
                       href={`/bookings/${b.id}`}
                       className={`block text-xs px-1.5 py-0.5 rounded truncate transition-colors ${
-                        b.status === "cancelled"
+                        b.status === "draft"
+                          ? "bg-text-muted/10 text-text-muted/70"
+                          : b.status === "cancelled"
                           ? "bg-danger/10 text-danger/70"
+                          : b.status === "paid"
+                          ? "bg-success/10 text-success/70"
                           : b.leadPartner === "eric"
                           ? "bg-eric/10 text-eric hover:bg-eric/20"
                           : "bg-marko/10 text-marko hover:bg-marko/20"

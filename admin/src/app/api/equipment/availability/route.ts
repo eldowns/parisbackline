@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
 
   const where: Record<string, unknown> = {
     booking: {
-      status: { not: "cancelled" },
+      status: { notIn: ["cancelled", "draft"] },
       dateStart: { lte: end },
       dateEnd: { gte: start },
     },

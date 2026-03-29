@@ -39,8 +39,8 @@ export async function POST(request: NextRequest) {
         commPartner: body.commPartner,
         invoicePartner: body.invoicePartner,
         accountPartner: body.accountPartner,
-        invoiceSent: body.invoiceSent || false,
-        invoicePaid: body.invoicePaid || false,
+        invoiceSent: ["invoice_sent", "paid"].includes(body.status),
+        invoicePaid: body.status === "paid",
         notes: body.notes || null,
         status: body.status || "confirmed",
         equipment: {

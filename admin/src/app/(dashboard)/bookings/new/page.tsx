@@ -40,8 +40,6 @@ export default async function NewBookingPage({
         commPartner: sourceBooking.commPartner,
         invoicePartner: sourceBooking.invoicePartner,
         accountPartner: sourceBooking.accountPartner,
-        invoiceSent: false,
-        invoicePaid: false,
         notes: sourceBooking.notes || "",
         status: "confirmed",
         equipment: sourceBooking.equipment.map((be) => ({

@@ -45,8 +45,6 @@ interface BookingData {
   commPartner: string;
   invoicePartner: string;
   accountPartner: string;
-  invoiceSent: boolean;
-  invoicePaid: boolean;
   notes: string;
   status: string;
   equipment: { equipmentId: string; quantity: number; rentalPrice: number }[];
@@ -81,8 +79,6 @@ export default function BookingForm({
       commPartner: "eric",
       invoicePartner: "eric",
       accountPartner: "eric",
-      invoiceSent: false,
-      invoicePaid: false,
       notes: "",
       status: "confirmed",
       equipment: [],
@@ -194,7 +190,7 @@ export default function BookingForm({
     }
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent, statusOverride?: string) {
     e.preventDefault();
     setSaving(true);
     setFormError("");
@@ -210,6 +206,7 @@ export default function BookingForm({
           ...form,
           rentalFee: effectiveRentalFee,
           referralFee: calculatedReferralFee,
+          ...(statusOverride ? { status: statusOverride } : {}),
         }),
       });
 
@@ -294,31 +291,23 @@ export default function BookingForm({
                 <input placeholder="Email" value={newClient.email} onChange={(e) => setNewClient({ ...newClient, email: e.target.value })} />
                 <input placeholder="Phone" value={newClient.phone} onChange={(e) => setNewClient({ ...newClient, phone: e.target.value })} />
               </div>
-              <button type="button" onClick={handleCreateClient} className="bg-accent text-bg-primary text-xs font-medium px-3 py-1.5 cursor-pointer" style={{ borderRadius: "1px" }}>
+              <button type="button" onClick={handleCreateClient} className="bg-accent text-bg-primary text-[0.72rem] font-semibold uppercase tracking-[0.14em] px-3 py-1.5 cursor-pointer" style={{ borderRadius: "1px" }}>
                 Add Client
               </button>
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={labelClass}>Status</label>
-              <select value={form.status} onChange={(e) => update({ status: e.target.value })} className="w-full">
-                <option value="confirmed">Confirmed</option>
-                <option value="completed">Completed</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
-            </div>
-            <div className="flex items-end gap-4">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={form.invoiceSent} onChange={(e) => update({ invoiceSent: e.target.checked })} className="accent-accent w-4 h-4" />
-                <span className="text-sm text-text-secondary">Invoice Sent</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" checked={form.invoicePaid} onChange={(e) => update({ invoicePaid: e.target.checked })} className="accent-accent w-4 h-4" />
-                <span className="text-sm text-text-secondary">Paid</span>
-              </label>
-            </div>
+          <div>
+            <label className={labelClass}>Status</label>
+            <select value={form.status} onChange={(e) => update({ status: e.target.value })} className="w-full">
+              <option value="draft">Draft</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="in_progress">In Progress</option>
+              <option value="completed">Complete</option>
+              <option value="invoice_sent">Invoice Sent</option>
+              <option value="paid">Paid</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
           </div>
         </div>
 
@@ -540,11 +529,22 @@ export default function BookingForm({
           <button
             type="submit"
             disabled={saving}
-            className="bg-accent text-bg-primary font-medium px-6 py-2.5 transition-all disabled:opacity-50 cursor-pointer hover:brightness-110"
+            className="bg-accent text-bg-primary text-[0.72rem] font-semibold uppercase tracking-[0.14em] px-6 py-2.5 transition-all disabled:opacity-50 cursor-pointer hover:brightness-110"
             style={{ borderRadius: "1px" }}
           >
             {saving ? "Saving..." : isEdit ? "Update Booking" : "Create Booking"}
           </button>
+          {!isEdit && (
+            <button
+              type="button"
+              disabled={saving}
+              onClick={(e) => handleSubmit(e, "draft")}
+              className="border border-border text-text-secondary hover:text-text-primary text-[0.72rem] font-semibold uppercase tracking-[0.14em] px-6 py-2.5 transition-all disabled:opacity-50 cursor-pointer"
+              style={{ borderRadius: "1px" }}
+            >
+              {saving ? "Saving..." : "Save as Draft"}
+            </button>
+          )}
           <button
             type="button"
             onClick={() => router.back()}

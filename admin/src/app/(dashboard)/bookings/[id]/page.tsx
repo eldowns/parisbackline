@@ -55,7 +55,7 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
         <div className="flex gap-3">
           <Link
             href={`/bookings/${booking.id}/edit`}
-            className="bg-accent hover:brightness-110 text-bg-primary text-sm font-medium px-4 py-2.5 rounded-none transition-colors"
+            className="bg-accent hover:brightness-110 text-bg-primary text-[0.72rem] font-semibold uppercase tracking-[0.14em] px-4 py-2.5 rounded-none transition-colors"
           >
             Edit Booking
           </Link>
@@ -72,22 +72,18 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
               <div>
                 <p className="text-text-muted text-xs uppercase tracking-wider mb-1">Status</p>
                 <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                  booking.status === "draft" ? "bg-text-muted/10 text-text-muted" :
                   booking.status === "confirmed" ? "bg-eric/10 text-eric" :
+                  booking.status === "in_progress" ? "bg-accent/10 text-accent" :
                   booking.status === "completed" ? "bg-success/10 text-success" :
+                  booking.status === "invoice_sent" ? "bg-warning/10 text-warning" :
+                  booking.status === "paid" ? "bg-success/10 text-success" :
                   "bg-danger/10 text-danger"
                 }`}>
-                  {booking.status}
+                  {booking.status === "in_progress" ? "In Progress" :
+                   booking.status === "invoice_sent" ? "Invoice Sent" :
+                   booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
                 </span>
-              </div>
-              <div>
-                <p className="text-text-muted text-xs uppercase tracking-wider mb-1">Invoice</p>
-                {booking.invoicePaid ? (
-                  <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-success/10 text-success">Paid</span>
-                ) : booking.invoiceSent ? (
-                  <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-warning/10 text-warning">Sent, unpaid</span>
-                ) : (
-                  <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-danger/10 text-danger">Not sent</span>
-                )}
               </div>
               <div>
                 <p className="text-text-muted text-xs uppercase tracking-wider mb-1">Rental Fee</p>

@@ -37,8 +37,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       commPartner: body.commPartner,
       invoicePartner: body.invoicePartner,
       accountPartner: body.accountPartner,
-      invoiceSent: body.invoiceSent ?? false,
-      invoicePaid: body.invoicePaid ?? false,
+      invoiceSent: ["invoice_sent", "paid"].includes(body.status),
+      invoicePaid: body.status === "paid",
       notes: body.notes,
       status: body.status,
       equipment: {

@@ -131,7 +131,7 @@ export async function POST(request: NextRequest) {
     // Mark invoice as sent
     await prisma.booking.update({
       where: { id: bookingId },
-      data: { invoiceSent: true },
+      data: { invoiceSent: true, status: "invoice_sent" },
     });
 
     return NextResponse.json({ success: true, invoiceNumber });

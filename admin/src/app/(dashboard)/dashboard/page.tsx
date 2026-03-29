@@ -17,9 +17,9 @@ export default async function DashboardPage() {
   const ytdStart = startOfYear(now);
   const session = await getSession();
 
-  const notCancelled = { status: { not: "cancelled" } as const };
-  const paidFilter = { ...notCancelled, invoicePaid: true };
-  const unpaidFilter = { ...notCancelled, invoicePaid: false };
+  const active = { status: { notIn: ["cancelled", "draft"] as string[] } };
+  const paidFilter = { status: "paid" as const };
+  const unpaidFilter = { status: { notIn: ["cancelled", "draft", "paid"] as string[] } };
 
   const [
     totalBookings,
@@ -54,7 +54,7 @@ export default async function DashboardPage() {
       take: 6,
       orderBy: { dateStart: "desc" },
       include: { client: true },
-      where: notCancelled,
+      where: active,
     }),
     prisma.booking.findMany({
       where: unpaidFilter,
@@ -90,16 +90,16 @@ export default async function DashboardPage() {
     }),
     // Counts
     prisma.booking.count({
-      where: { ...notCancelled, dateStart: { gte: mtdStart } },
+      where: { ...active, dateStart: { gte: mtdStart } },
     }),
     prisma.booking.count({
-      where: { ...notCancelled, dateStart: { gte: ytdStart } },
+      where: { ...active, dateStart: { gte: ytdStart } },
     }),
     // Top clients
     prisma.client.findMany({
       include: {
         bookings: {
-          where: notCancelled,
+          where: active,
           select: { rentalFee: true, deliveryFee: true },
         },
       },
@@ -153,7 +153,7 @@ export default async function DashboardPage() {
           </div>
           <Link
             href="/bookings/new"
-            className="bg-accent hover:brightness-110 text-bg-primary text-sm font-medium px-4 py-2.5 transition-colors"
+            className="bg-accent hover:brightness-110 text-bg-primary text-[0.72rem] font-semibold uppercase tracking-[0.14em] px-4 py-2.5 transition-colors"
             style={{ borderRadius: "1px" }}
           >
             + New Booking
@@ -165,7 +165,7 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div className="bg-bg-secondary border border-border p-5 dash-card">
           <p className="text-text-muted text-[0.65rem] font-semibold uppercase tracking-[0.18em] mb-1">Month to Date</p>
-          <p className="text-2xl font-bold text-accent" style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.02em" }}>
+          <p className="text-2xl font-bold text-text-primary" style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.02em" }}>
             <CountUp value={mtdPaidTotal} prefix="$" decimals={2} />
           </p>
           {mtdPendingTotal > 0 && (
@@ -177,7 +177,7 @@ export default async function DashboardPage() {
         </div>
         <div className="bg-bg-secondary border border-border p-5 dash-card">
           <p className="text-text-muted text-[0.65rem] font-semibold uppercase tracking-[0.18em] mb-1">Year to Date</p>
-          <p className="text-2xl font-bold text-success" style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.02em" }}>
+          <p className="text-2xl font-bold text-text-primary" style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.02em" }}>
             <CountUp value={ytdPaidTotal} prefix="$" decimals={2} />
           </p>
           {ytdPendingTotal > 0 && (
@@ -206,27 +206,27 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-6">
         <div className="bg-bg-secondary border border-border p-4 text-center dash-card">
           <p className="text-text-muted text-[0.6rem] uppercase tracking-wider mb-1">Active</p>
-          <p className="text-xl font-bold text-eric" style={{ fontFamily: "'Bebas Neue', sans-serif" }}><CountUp value={activeBookings} /></p>
+          <p className={`text-xl font-bold ${activeBookings > 0 ? "text-success" : "text-text-primary"}`} style={{ fontFamily: "'Bebas Neue', sans-serif" }}><CountUp value={activeBookings} /></p>
         </div>
         <div className="bg-bg-secondary border border-border p-4 text-center dash-card">
           <p className="text-text-muted text-[0.6rem] uppercase tracking-wider mb-1">Completed</p>
-          <p className="text-xl font-bold text-success" style={{ fontFamily: "'Bebas Neue', sans-serif" }}><CountUp value={completedBookings} /></p>
+          <p className="text-xl font-bold text-text-primary" style={{ fontFamily: "'Bebas Neue', sans-serif" }}><CountUp value={completedBookings} /></p>
         </div>
         <div className="bg-bg-secondary border border-border p-4 text-center dash-card">
           <p className="text-text-muted text-[0.6rem] uppercase tracking-wider mb-1">Cancelled</p>
-          <p className="text-xl font-bold text-danger" style={{ fontFamily: "'Bebas Neue', sans-serif" }}><CountUp value={cancelledBookings} /></p>
+          <p className="text-xl font-bold text-text-primary" style={{ fontFamily: "'Bebas Neue', sans-serif" }}><CountUp value={cancelledBookings} /></p>
         </div>
         <div className="bg-bg-secondary border border-border p-4 text-center dash-card">
           <p className="text-text-muted text-[0.6rem] uppercase tracking-wider mb-1">Equipment</p>
-          <p className="text-xl font-bold text-marko" style={{ fontFamily: "'Bebas Neue', sans-serif" }}><CountUp value={totalEquipment} /></p>
+          <p className="text-xl font-bold text-text-primary" style={{ fontFamily: "'Bebas Neue', sans-serif" }}><CountUp value={totalEquipment} /></p>
         </div>
         <div className="bg-bg-secondary border border-border p-4 text-center dash-card">
           <p className="text-text-muted text-[0.6rem] uppercase tracking-wider mb-1">Unpaid</p>
-          <p className="text-xl font-bold text-warning" style={{ fontFamily: "'Bebas Neue', sans-serif" }}><CountUp value={unpaidBookings.length} /></p>
+          <p className={`text-xl font-bold ${unpaidBookings.length > 0 ? "text-danger" : "text-text-primary"}`} style={{ fontFamily: "'Bebas Neue', sans-serif" }}><CountUp value={unpaidBookings.length} /></p>
         </div>
         <div className="bg-bg-secondary border border-border p-4 text-center dash-card">
           <p className="text-text-muted text-[0.6rem] uppercase tracking-wider mb-1">Outstanding</p>
-          <p className="text-xl font-bold text-warning" style={{ fontFamily: "'Bebas Neue', sans-serif" }}><CountUp value={unpaidTotal} prefix="$" /></p>
+          <p className={`text-xl font-bold ${unpaidTotal > 0 ? "text-danger" : "text-text-primary"}`} style={{ fontFamily: "'Bebas Neue', sans-serif" }}><CountUp value={unpaidTotal} prefix="$" /></p>
         </div>
       </div>
 
@@ -284,8 +284,8 @@ export default async function DashboardPage() {
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-semibold">${(b.rentalFee + b.deliveryFee).toLocaleString()}</p>
-                  <span className={`text-xs ${b.invoiceSent ? "text-warning" : "text-danger"}`}>
-                    {b.invoiceSent ? "Sent" : "Not sent"}
+                  <span className={`text-xs ${b.status === "invoice_sent" ? "text-warning" : "text-text-muted"}`}>
+                    {b.status === "invoice_sent" ? "Invoice Sent" : b.status.charAt(0).toUpperCase() + b.status.slice(1).replace("_", " ")}
                   </span>
                 </div>
               </Link>
