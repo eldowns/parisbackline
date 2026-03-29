@@ -218,17 +218,17 @@ function BookingRow({ b }: { b: BookingData }) {
   );
 }
 
-export default function BookingsList({ bookings }: { bookings: BookingData[] }) {
+export default function BookingsList({ bookings }: { bookings: BookingData[] | null }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold">Bookings</h1>
-          <p className="text-text-secondary text-sm mt-1">{bookings.length} total</p>
+          <p className="text-text-secondary text-sm mt-1">{bookings ? `${bookings.length} total` : "Loading..."}</p>
         </div>
         <Link
           href="/bookings/new"
-          className="bg-accent hover:bg-accent-hover text-bg-primary text-sm font-medium px-4 py-2.5 transition-colors cursor-pointer"
+          className="bg-accent hover:brightness-110 text-bg-primary text-sm font-medium px-4 py-2.5 transition-colors cursor-pointer"
           style={{ borderRadius: "1px" }}
         >
           + New Booking
@@ -236,10 +236,24 @@ export default function BookingsList({ bookings }: { bookings: BookingData[] }) 
       </div>
 
       <div className="bg-bg-secondary border border-border" style={{ borderRadius: "1px" }}>
-        {bookings.map((b) => (
+        {/* Column headings */}
+        <div className="flex items-center px-5 py-3 border-b border-border text-text-muted text-xs font-medium uppercase tracking-wider">
+          <div className="w-4 mr-3 shrink-0" />
+          <div className="flex-1 flex items-center gap-6">
+            <span className="w-40">Client</span>
+            <span className="w-36">Dates</span>
+            <span className="w-24 text-right">Total</span>
+            <span>Status</span>
+          </div>
+          <span className="ml-4 w-8" />
+        </div>
+        {bookings === null && (
+          <div className="px-5 py-4 text-center text-text-muted text-sm animate-pulse">Loading bookings...</div>
+        )}
+        {bookings?.map((b) => (
           <BookingRow key={b.id} b={b} />
         ))}
-        {bookings.length === 0 && (
+        {bookings && bookings.length === 0 && (
           <p className="text-text-muted text-sm text-center py-12">No bookings yet. Create your first one!</p>
         )}
       </div>

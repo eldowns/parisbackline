@@ -1,17 +1,14 @@
-import { prisma } from "@/lib/prisma";
+"use client";
+
+import { useState, useEffect } from "react";
 import BookingsList from "@/components/bookings/BookingsList";
 
-export const dynamic = "force-dynamic";
+export default function BookingsPage() {
+  const [bookings, setBookings] = useState(null);
 
-export default async function BookingsPage() {
-  const bookings = await prisma.booking.findMany({
-    orderBy: { dateStart: "desc" },
-    include: {
-      client: true,
-      equipment: { include: { equipment: true } },
-      subRentals: true,
-    },
-  });
+  useEffect(() => {
+    fetch("/api/bookings").then((r) => r.json()).then(setBookings);
+  }, []);
 
-  return <BookingsList bookings={JSON.parse(JSON.stringify(bookings))} />;
+  return <BookingsList bookings={bookings} />;
 }
