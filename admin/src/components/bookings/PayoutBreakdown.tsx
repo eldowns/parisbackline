@@ -113,22 +113,6 @@ export default function PayoutBreakdown({
           </div>
         ))}
 
-        {/* Verification */}
-        <div className="border-t border-border pt-3">
-          <div className="flex justify-between text-xs text-text-muted">
-            <span>Verification Total</span>
-            <span>
-              $
-              {(
-                payout.eric.total +
-                payout.marko.total +
-                payout.referral.amount +
-                Object.values(payout.thirdParties).reduce((s, d) => s + d.subRentalCost, 0) +
-                deliveryFee
-              ).toFixed(2)}
-            </span>
-          </div>
-        </div>
       </div>
     </div>
   );
