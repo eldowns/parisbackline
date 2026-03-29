@@ -1,111 +1,87 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   <defs>
-    <filter id="blur-xl"><feGaussianBlur stdDeviation="90"/></filter>
-    <filter id="blur-lg"><feGaussianBlur stdDeviation="60"/></filter>
-    <filter id="blur-md"><feGaussianBlur stdDeviation="40"/></filter>
-    <linearGradient id="gold-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%"   stop-color="#c8a44a"/>
-      <stop offset="50%"  stop-color="#e8c878"/>
-      <stop offset="100%" stop-color="#c8a44a"/>
-    </linearGradient>
-    <linearGradient id="badge-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%"   stop-color="#c8a44a"/>
+    <filter id="glow-lg"><feGaussianBlur stdDeviation="80"/></filter>
+    <filter id="glow-md"><feGaussianBlur stdDeviation="50"/></filter>
+    <filter id="glow-sm"><feGaussianBlur stdDeviation="30"/></filter>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#a07830"/>
+      <stop offset="50%" stop-color="#e8c878"/>
       <stop offset="100%" stop-color="#a07830"/>
     </linearGradient>
-    <pattern id="dots" x="0" y="0" width="28" height="28" patternUnits="userSpaceOnUse">
-      <circle cx="1" cy="1" r="1" fill="white" opacity="1"/>
-    </pattern>
-    <clipPath id="bounds">
-      <rect width="1200" height="630"/>
-    </clipPath>
+    <radialGradient id="vig" cx="50%" cy="45%" r="65%">
+      <stop offset="0%" stop-color="#09090f" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#09090f" stop-opacity="0.85"/>
+    </radialGradient>
+    <clipPath id="clip"><rect width="1200" height="630"/></clipPath>
   </defs>
 
   <!-- Background -->
   <rect width="1200" height="630" fill="#09090f"/>
 
-  <!-- Ambient light blobs — warm gold stage wash -->
-  <g clip-path="url(#bounds)">
-    <ellipse cx="200"  cy="140"  rx="360" ry="260" fill="#c8a44a" opacity="0.14" filter="url(#blur-xl)"/>
-    <ellipse cx="1050" cy="160"  rx="300" ry="220" fill="#c8a44a" opacity="0.10" filter="url(#blur-xl)"/>
-    <ellipse cx="600"  cy="560"  rx="350" ry="160" fill="#c8a44a" opacity="0.12" filter="url(#blur-lg)"/>
-    <ellipse cx="400"  cy="500"  rx="220" ry="130" fill="#b07820" opacity="0.10" filter="url(#blur-md)"/>
-    <ellipse cx="860"  cy="480"  rx="200" ry="120" fill="#c8a44a" opacity="0.08" filter="url(#blur-md)"/>
+  <!-- Stage atmosphere -->
+  <g clip-path="url(#clip)">
+    <!-- Center warm glow -->
+    <ellipse cx="600" cy="280" rx="500" ry="300" fill="#c8a44a" opacity="0.08" filter="url(#glow-lg)"/>
+    <!-- Left warm -->
+    <ellipse cx="180" cy="180" rx="280" ry="200" fill="#c8a44a" opacity="0.06" filter="url(#glow-lg)"/>
+    <!-- Right warm -->
+    <ellipse cx="1020" cy="200" rx="260" ry="180" fill="#c8a44a" opacity="0.05" filter="url(#glow-lg)"/>
+    <!-- Floor glow -->
+    <ellipse cx="600" cy="580" rx="500" ry="120" fill="#c8a44a" opacity="0.07" filter="url(#glow-md)"/>
   </g>
 
-  <!-- Dot grid -->
-  <rect width="1200" height="630" fill="url(#dots)" opacity="0.07"/>
+  <!-- Truss silhouette -->
+  <g opacity="0.2">
+    <!-- Left tower -->
+    <line x1="100" y1="0" x2="100" y2="630" stroke="#c8a44a" stroke-width="1.5"/>
+    <!-- Right tower -->
+    <line x1="1100" y1="0" x2="1100" y2="630" stroke="#c8a44a" stroke-width="1.5"/>
+    <!-- Top chord -->
+    <line x1="100" y1="40" x2="1100" y2="40" stroke="#c8a44a" stroke-width="1.5"/>
+    <!-- Bottom chord -->
+    <line x1="100" y1="56" x2="1100" y2="56" stroke="#c8a44a" stroke-width="1"/>
+  </g>
+
+  <!-- Fixture beams -->
+  <g opacity="0.04">
+    <polygon points="300,60 240,400 360,400" fill="#c8a44a"/>
+    <polygon points="500,60 430,400 570,400" fill="#c8a44a"/>
+    <polygon points="600,60 520,420 680,420" fill="#c8a44a"/>
+    <polygon points="700,60 630,400 770,400" fill="#c8a44a"/>
+    <polygon points="900,60 840,400 960,400" fill="#c8a44a"/>
+  </g>
+
+  <!-- Fixture heads -->
+  <g opacity="0.3">
+    <circle cx="300" cy="60" r="5" fill="#c8a44a"/>
+    <circle cx="500" cy="60" r="5" fill="#c8a44a"/>
+    <circle cx="600" cy="60" r="6" fill="#c8a44a"/>
+    <circle cx="700" cy="60" r="5" fill="#c8a44a"/>
+    <circle cx="900" cy="60" r="5" fill="#c8a44a"/>
+  </g>
 
   <!-- Vignette -->
-  <radialGradient id="vig" cx="50%" cy="50%" r="72%">
-    <stop offset="0%"   stop-color="#09090f" stop-opacity="0.0"/>
-    <stop offset="100%" stop-color="#09090f" stop-opacity="0.75"/>
-  </radialGradient>
   <rect width="1200" height="630" fill="url(#vig)"/>
 
-  <!-- Stage rig silhouette (top) -->
-  <!-- Truss bar -->
-  <rect x="80" y="28" width="1040" height="6" rx="3" fill="#c8a44a" opacity="0.18"/>
-  <rect x="80" y="31" width="1040" height="2" rx="1" fill="#c8a44a" opacity="0.10"/>
-  <!-- Truss drop lines -->
-  <line x1="200" y1="34" x2="200" y2="54" stroke="#c8a44a" stroke-width="1" opacity="0.25"/>
-  <line x1="400" y1="34" x2="400" y2="54" stroke="#c8a44a" stroke-width="1" opacity="0.25"/>
-  <line x1="600" y1="34" x2="600" y2="58" stroke="#c8a44a" stroke-width="1" opacity="0.25"/>
-  <line x1="800" y1="34" x2="800" y2="54" stroke="#c8a44a" stroke-width="1" opacity="0.25"/>
-  <line x1="1000" y1="34" x2="1000" y2="54" stroke="#c8a44a" stroke-width="1" opacity="0.25"/>
-  <!-- Fixture heads -->
-  <ellipse cx="200" cy="57" rx="9" ry="5" fill="#c8a44a" opacity="0.30"/>
-  <ellipse cx="400" cy="57" rx="9" ry="5" fill="#c8a44a" opacity="0.30"/>
-  <ellipse cx="600" cy="61" rx="9" ry="5" fill="#c8a44a" opacity="0.30"/>
-  <ellipse cx="800" cy="57" rx="9" ry="5" fill="#c8a44a" opacity="0.30"/>
-  <ellipse cx="1000" cy="57" rx="9" ry="5" fill="#c8a44a" opacity="0.30"/>
-  <!-- Beam cones from fixtures -->
-  <polygon points="200,62 160,200 240,200" fill="#c8a44a" opacity="0.04"/>
-  <polygon points="400,62 355,200 445,200" fill="#c8a44a" opacity="0.04"/>
-  <polygon points="600,66 545,200 655,200" fill="#c8a44a" opacity="0.05"/>
-  <polygon points="800,62 755,200 845,200" fill="#c8a44a" opacity="0.04"/>
-  <polygon points="1000,62 955,200 1045,200" fill="#c8a44a" opacity="0.04"/>
-
-  <!-- Wordmark badge pill -->
-  <rect x="80" y="108" width="186" height="32" rx="16" fill="#c8a44a" opacity="0.12"/>
-  <rect x="80" y="108" width="186" height="32" rx="16" fill="none" stroke="#c8a44a" stroke-width="1" opacity="0.35"/>
-  <text x="173" y="129" text-anchor="middle" fill="#c8a44a" font-family="system-ui,-apple-system,'Segoe UI',sans-serif" font-size="12" font-weight="600" letter-spacing="2">PARIS BACKLINE</text>
+  <!-- Gold rule -->
+  <rect x="570" y="190" width="60" height="1.5" fill="#c8a44a" opacity="0.6"/>
 
   <!-- Eyebrow -->
-  <text x="600" y="230" text-anchor="middle" fill="#4a4a3a" font-family="system-ui,-apple-system,'Segoe UI',sans-serif" font-size="14" letter-spacing="5" font-weight="400">LOS ANGELES, CALIFORNIA</text>
+  <text x="600" y="230" text-anchor="middle" fill="#c8a44a" font-family="system-ui,-apple-system,sans-serif" font-size="11" font-weight="500" letter-spacing="6" opacity="0.7">GREATER LOS ANGELES  ·  WIRELESS SPECIALISTS</text>
 
-  <!-- Main headline -->
-  <text x="600" y="340" text-anchor="middle" fill="url(#gold-grad)" font-family="system-ui,-apple-system,'Segoe UI',sans-serif" font-size="84" font-weight="800" letter-spacing="-2">PARIS BACKLINE</text>
+  <!-- Main wordmark -->
+  <text x="600" y="330" text-anchor="middle" fill="url(#gold)" font-family="system-ui,-apple-system,sans-serif" font-size="96" font-weight="800" letter-spacing="4">PARIS</text>
+  <text x="600" y="410" text-anchor="middle" fill="#f1f5f9" font-family="system-ui,-apple-system,sans-serif" font-size="96" font-weight="800" letter-spacing="4">BACKLINE</text>
 
-  <!-- Sub headline -->
-  <text x="600" y="398" text-anchor="middle" fill="#6b5a3a" font-family="system-ui,-apple-system,'Segoe UI',sans-serif" font-size="26" font-weight="300" letter-spacing="2">Backline &amp; Wireless Audio Rental</text>
+  <!-- Subtitle -->
+  <text x="600" y="468" text-anchor="middle" fill="#94a3b8" font-family="system-ui,-apple-system,sans-serif" font-size="18" font-weight="300" letter-spacing="1" opacity="0.7">Professional wireless systems and audio production equipment</text>
 
-  <!-- Thin separator -->
-  <line x1="500" y1="428" x2="700" y2="428" stroke="#2a2010" stroke-width="1.5"/>
+  <!-- Bottom rule -->
+  <rect x="540" y="498" width="120" height="1" fill="#c8a44a" opacity="0.25"/>
 
-  <!-- Service chips -->
-  <!-- Wireless Systems -->
-  <rect x="170" y="452" width="178" height="32" rx="16" fill="#c8a44a0e" stroke="#c8a44a35" stroke-width="1"/>
-  <circle cx="196" cy="468" r="4" fill="#c8a44a"/>
-  <text x="210" y="473" fill="#c8a44a99" font-family="system-ui,-apple-system,'Segoe UI',sans-serif" font-size="13" font-weight="400">Wireless Systems</text>
+  <!-- Service tags -->
+  <text x="600" y="540" text-anchor="middle" fill="#c8a44a" font-family="system-ui,-apple-system,sans-serif" font-size="10" font-weight="500" letter-spacing="4" opacity="0.5">SENNHEISER  ·  MIDAS  ·  ALLEN &amp; HEATH  ·  NORD</text>
 
-  <!-- Digital Consoles -->
-  <rect x="362" y="452" width="170" height="32" rx="16" fill="#c8a44a0e" stroke="#c8a44a35" stroke-width="1"/>
-  <circle cx="388" cy="468" r="4" fill="#c8a44a"/>
-  <text x="402" y="473" fill="#c8a44a99" font-family="system-ui,-apple-system,'Segoe UI',sans-serif" font-size="13" font-weight="400">Digital Consoles</text>
-
-  <!-- IEM Systems -->
-  <rect x="546" y="452" width="132" height="32" rx="16" fill="#c8a44a0e" stroke="#c8a44a35" stroke-width="1"/>
-  <circle cx="572" cy="468" r="4" fill="#c8a44a"/>
-  <text x="586" y="473" fill="#c8a44a99" font-family="system-ui,-apple-system,'Segoe UI',sans-serif" font-size="13" font-weight="400">IEM Systems</text>
-
-  <!-- Stage Pianos -->
-  <rect x="692" y="452" width="140" height="32" rx="16" fill="#c8a44a0e" stroke="#c8a44a35" stroke-width="1"/>
-  <circle cx="718" cy="468" r="4" fill="#c8a44a"/>
-  <text x="732" y="473" fill="#c8a44a99" font-family="system-ui,-apple-system,'Segoe UI',sans-serif" font-size="13" font-weight="400">Stage Pianos</text>
-
-  <!-- Tagline bottom -->
-  <text x="600" y="548" text-anchor="middle" fill="#2a2010" font-family="system-ui,-apple-system,'Segoe UI',sans-serif" font-size="13" letter-spacing="1">Maintained to touring spec · Greater Los Angeles</text>
-
-  <!-- URL bottom right -->
-  <text x="1118" y="600" text-anchor="end" fill="#2a2010" font-family="system-ui,-apple-system,'Segoe UI',sans-serif" font-size="12">parisbackline.vercel.app</text>
+  <!-- URL -->
+  <text x="600" y="600" text-anchor="middle" fill="#94a3b8" font-family="system-ui,-apple-system,sans-serif" font-size="11" letter-spacing="2" opacity="0.3">PARISBACKLINE.COM</text>
 </svg>
