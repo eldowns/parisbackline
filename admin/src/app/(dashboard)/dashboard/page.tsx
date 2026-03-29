@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { format, startOfMonth, startOfYear } from "date-fns";
 import CountUp from "@/components/ui/CountUp";
+import Greeting from "@/components/ui/Greeting";
+import { getSession } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +15,7 @@ export default async function DashboardPage() {
   const now = new Date();
   const mtdStart = startOfMonth(now);
   const ytdStart = startOfYear(now);
+  const session = await getSession();
 
   const notCancelled = { status: { not: "cancelled" } as const };
   const paidFilter = { ...notCancelled, invoicePaid: true };
@@ -126,8 +129,11 @@ export default async function DashboardPage() {
     .sort((a, b) => b.revenue - a.revenue)
     .slice(0, 5);
 
+  const firstName = session?.name?.split(" ")[0] || "there";
+
   return (
     <div>
+      <Greeting name={firstName} />
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl" style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.06em" }}>
