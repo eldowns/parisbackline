@@ -13,6 +13,10 @@ export default async function DashboardPage() {
   const mtdStart = startOfMonth(now);
   const ytdStart = startOfYear(now);
 
+  const notCancelled = { status: { not: "cancelled" } as const };
+  const paidFilter = { ...notCancelled, invoicePaid: true };
+  const unpaidFilter = { ...notCancelled, invoicePaid: false };
+
   const [
     totalBookings,
     activeBookings,
@@ -22,13 +26,18 @@ export default async function DashboardPage() {
     totalEquipment,
     recentBookings,
     unpaidBookings,
-    allTimeRevenue,
-    mtdRevenue,
-    ytdRevenue,
+    // Paid revenue
+    allTimePaid,
+    mtdPaid,
+    ytdPaid,
+    // Pending revenue
+    allTimePending,
+    mtdPending,
+    ytdPending,
+    // Counts
     mtdBookingCount,
     ytdBookingCount,
-    mtdDeliveryRevenue,
-    ytdDeliveryRevenue,
+    // Top clients
     topClients,
   ] = await Promise.all([
     prisma.booking.count(),
@@ -41,65 +50,75 @@ export default async function DashboardPage() {
       take: 6,
       orderBy: { dateStart: "desc" },
       include: { client: true },
+      where: notCancelled,
     }),
     prisma.booking.findMany({
-      where: { invoicePaid: false, status: { not: "cancelled" } },
+      where: unpaidFilter,
       include: { client: true },
       orderBy: { dateStart: "desc" },
       take: 5,
     }),
+    // Paid
     prisma.booking.aggregate({
       _sum: { rentalFee: true, deliveryFee: true },
-      where: { status: { not: "cancelled" } },
+      where: paidFilter,
     }),
     prisma.booking.aggregate({
-      _sum: { rentalFee: true },
-      where: { status: { not: "cancelled" }, dateStart: { gte: mtdStart } },
+      _sum: { rentalFee: true, deliveryFee: true },
+      where: { ...paidFilter, dateStart: { gte: mtdStart } },
     }),
     prisma.booking.aggregate({
-      _sum: { rentalFee: true },
-      where: { status: { not: "cancelled" }, dateStart: { gte: ytdStart } },
+      _sum: { rentalFee: true, deliveryFee: true },
+      where: { ...paidFilter, dateStart: { gte: ytdStart } },
+    }),
+    // Pending
+    prisma.booking.aggregate({
+      _sum: { rentalFee: true, deliveryFee: true },
+      where: unpaidFilter,
+    }),
+    prisma.booking.aggregate({
+      _sum: { rentalFee: true, deliveryFee: true },
+      where: { ...unpaidFilter, dateStart: { gte: mtdStart } },
+    }),
+    prisma.booking.aggregate({
+      _sum: { rentalFee: true, deliveryFee: true },
+      where: { ...unpaidFilter, dateStart: { gte: ytdStart } },
+    }),
+    // Counts
+    prisma.booking.count({
+      where: { ...notCancelled, dateStart: { gte: mtdStart } },
     }),
     prisma.booking.count({
-      where: { status: { not: "cancelled" }, dateStart: { gte: mtdStart } },
+      where: { ...notCancelled, dateStart: { gte: ytdStart } },
     }),
-    prisma.booking.count({
-      where: { status: { not: "cancelled" }, dateStart: { gte: ytdStart } },
-    }),
-    prisma.booking.aggregate({
-      _sum: { deliveryFee: true },
-      where: { status: { not: "cancelled" }, dateStart: { gte: mtdStart } },
-    }),
-    prisma.booking.aggregate({
-      _sum: { deliveryFee: true },
-      where: { status: { not: "cancelled" }, dateStart: { gte: ytdStart } },
-    }),
+    // Top clients
     prisma.client.findMany({
       include: {
         bookings: {
-          where: { status: { not: "cancelled" } },
-          select: { rentalFee: true },
+          where: notCancelled,
+          select: { rentalFee: true, deliveryFee: true },
         },
       },
       orderBy: { name: "asc" },
     }),
   ]);
 
-  const allTimeTotal = (allTimeRevenue._sum.rentalFee || 0) + (allTimeRevenue._sum.deliveryFee || 0);
-  const mtdTotal = (mtdRevenue._sum.rentalFee || 0) + (mtdDeliveryRevenue._sum.deliveryFee || 0);
-  const ytdTotal = (ytdRevenue._sum.rentalFee || 0) + (ytdDeliveryRevenue._sum.deliveryFee || 0);
-  const mtdRentalOnly = mtdRevenue._sum.rentalFee || 0;
-  const ytdRentalOnly = ytdRevenue._sum.rentalFee || 0;
-  const mtdAvg = mtdBookingCount > 0 ? mtdTotal / mtdBookingCount : 0;
-  const ytdAvg = ytdBookingCount > 0 ? ytdTotal / ytdBookingCount : 0;
+  const sum = (a: { _sum: { rentalFee: number | null; deliveryFee: number | null } }) =>
+    (a._sum.rentalFee || 0) + (a._sum.deliveryFee || 0);
 
-  const unpaidTotal = unpaidBookings.reduce((s, b) => s + b.rentalFee, 0);
+  const mtdPaidTotal = sum(mtdPaid);
+  const ytdPaidTotal = sum(ytdPaid);
+  const allTimePaidTotal = sum(allTimePaid);
+  const mtdPendingTotal = sum(mtdPending);
+  const ytdPendingTotal = sum(ytdPending);
+  const allTimePendingTotal = sum(allTimePending);
 
-  // Top clients by revenue
+  const unpaidTotal = unpaidBookings.reduce((s, b) => s + b.rentalFee + b.deliveryFee, 0);
+
   const clientRevenue = topClients
     .map((c) => ({
       name: c.name,
-      revenue: c.bookings.reduce((s, b) => s + b.rentalFee, 0),
+      revenue: c.bookings.reduce((s, b) => s + b.rentalFee + b.deliveryFee, 0),
       count: c.bookings.length,
     }))
     .filter((c) => c.count > 0)
@@ -131,28 +150,35 @@ export default async function DashboardPage() {
         <div className="bg-bg-secondary border border-border p-5 dash-card">
           <p className="text-text-muted text-[0.65rem] font-semibold uppercase tracking-[0.18em] mb-1">Month to Date</p>
           <p className="text-2xl font-bold text-accent" style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.02em" }}>
-            ${mtdTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            ${mtdPaidTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
           </p>
+          {mtdPendingTotal > 0 && (
+            <p className="text-xs text-warning mt-1">${mtdPendingTotal.toLocaleString()} pending</p>
+          )}
           <div className="flex gap-4 mt-2 text-xs text-text-muted">
             <span>{mtdBookingCount} bookings</span>
-            <span>${mtdAvg.toFixed(0)} avg</span>
           </div>
         </div>
         <div className="bg-bg-secondary border border-border p-5 dash-card">
           <p className="text-text-muted text-[0.65rem] font-semibold uppercase tracking-[0.18em] mb-1">Year to Date</p>
           <p className="text-2xl font-bold text-success" style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.02em" }}>
-            ${ytdTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            ${ytdPaidTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
           </p>
+          {ytdPendingTotal > 0 && (
+            <p className="text-xs text-warning mt-1">${ytdPendingTotal.toLocaleString()} pending</p>
+          )}
           <div className="flex gap-4 mt-2 text-xs text-text-muted">
             <span>{ytdBookingCount} bookings</span>
-            <span>${ytdAvg.toFixed(0)} avg</span>
           </div>
         </div>
         <div className="bg-bg-secondary border border-border p-5 dash-card">
           <p className="text-text-muted text-[0.65rem] font-semibold uppercase tracking-[0.18em] mb-1">All Time</p>
           <p className="text-2xl font-bold text-text-primary" style={{ fontFamily: "'Bebas Neue', sans-serif", letterSpacing: "0.02em" }}>
-            ${allTimeTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            ${allTimePaidTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
           </p>
+          {allTimePendingTotal > 0 && (
+            <p className="text-xs text-warning mt-1">${allTimePendingTotal.toLocaleString()} pending</p>
+          )}
           <div className="flex gap-4 mt-2 text-xs text-text-muted">
             <span>{totalBookings} bookings</span>
             <span>{totalClients} clients</span>
@@ -188,44 +214,6 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* MTD vs YTD Breakdown */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div className="bg-bg-secondary border border-border p-5 dash-card">
-          <p className="text-text-muted text-[0.65rem] font-semibold uppercase tracking-[0.18em] mb-3">MTD Breakdown</p>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-text-secondary">Rental Revenue</span>
-              <span className="font-semibold">${mtdRentalOnly.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-text-secondary">Delivery Revenue</span>
-              <span className="font-semibold">${(mtdDeliveryRevenue._sum.deliveryFee || 0).toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between border-t border-border pt-2">
-              <span className="text-text-primary font-medium">Total</span>
-              <span className="font-bold text-accent">${mtdTotal.toLocaleString()}</span>
-            </div>
-          </div>
-        </div>
-        <div className="bg-bg-secondary border border-border p-5 dash-card">
-          <p className="text-text-muted text-[0.65rem] font-semibold uppercase tracking-[0.18em] mb-3">YTD Breakdown</p>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-text-secondary">Rental Revenue</span>
-              <span className="font-semibold">${ytdRentalOnly.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-text-secondary">Delivery Revenue</span>
-              <span className="font-semibold">${(ytdDeliveryRevenue._sum.deliveryFee || 0).toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between border-t border-border pt-2">
-              <span className="text-text-primary font-medium">Total</span>
-              <span className="font-bold text-success">${ytdTotal.toLocaleString()}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Recent Bookings */}
         <div className="bg-bg-secondary border border-border dash-card">
@@ -249,7 +237,7 @@ export default async function DashboardPage() {
                     {format(formatDate(new Date(b.dateStart)), "MMM d")} – {format(formatDate(new Date(b.dateEnd)), "MMM d")}
                   </p>
                 </div>
-                <p className="text-sm font-semibold">${b.rentalFee.toLocaleString()}</p>
+                <p className="text-sm font-semibold">${(b.rentalFee + b.deliveryFee).toLocaleString()}</p>
               </Link>
             ))}
           </div>
@@ -277,7 +265,7 @@ export default async function DashboardPage() {
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-semibold">${b.rentalFee.toLocaleString()}</p>
+                  <p className="text-sm font-semibold">${(b.rentalFee + b.deliveryFee).toLocaleString()}</p>
                   <span className={`text-xs ${b.invoiceSent ? "text-warning" : "text-danger"}`}>
                     {b.invoiceSent ? "Sent" : "Not sent"}
                   </span>

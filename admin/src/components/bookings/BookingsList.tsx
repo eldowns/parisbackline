@@ -73,18 +73,15 @@ function BookingRow({ b }: { b: BookingData }) {
   return (
     <div className="border-b border-border">
       {/* Summary row */}
-      <div className="flex items-center px-5 py-4 hover:bg-bg-hover transition-colors">
-        <button
-          onClick={() => setOpen(!open)}
-          className="mr-3 text-text-muted hover:text-text-primary transition-colors cursor-pointer"
-        >
+      <div className="flex items-center px-5 py-4 hover:bg-bg-hover transition-colors cursor-pointer" onClick={() => setOpen(!open)}>
+        <div className="mr-3 text-text-muted">
           <svg
             className={`w-4 h-4 transition-transform ${open ? "rotate-90" : ""}`}
             fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
           >
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
           </svg>
-        </button>
+        </div>
 
         <div className="flex-1 min-w-0 flex items-center gap-6">
           <span className="font-medium text-sm w-40 truncate">{b.client.name}</span>
@@ -100,6 +97,7 @@ function BookingRow({ b }: { b: BookingData }) {
         <Link
           href={`/bookings/${b.id}/edit`}
           className="text-accent hover:text-accent-hover text-xs font-medium ml-4 cursor-pointer"
+          onClick={(e) => e.stopPropagation()}
         >
           Edit
         </Link>

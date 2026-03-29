@@ -118,7 +118,7 @@ export default function ClientsPage() {
             {clients.map((c) => {
               const revenue = c.bookings.filter((b) => b.status !== "cancelled").reduce((sum, b) => sum + b.rentalFee, 0);
               return (
-                <tr key={c.id} className="hover:bg-bg-hover transition-colors">
+                <tr key={c.id} className="hover:bg-bg-hover transition-colors cursor-pointer" onClick={() => startEdit(c)}>
                   <td className="px-5 py-3 font-medium">{c.name}</td>
                   <td className="px-5 py-3 text-text-secondary">{c.company || "—"}</td>
                   <td className="px-5 py-3 text-text-secondary text-xs">

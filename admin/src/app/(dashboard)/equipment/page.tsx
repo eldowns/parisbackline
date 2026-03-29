@@ -206,7 +206,7 @@ export default function EquipmentPage() {
           </thead>
           <tbody className="divide-y divide-border">
             {filtered.map((eq) => (
-              <tr key={eq.id} className="hover:bg-bg-hover transition-colors">
+              <tr key={eq.id} className="hover:bg-bg-hover transition-colors cursor-pointer" onClick={() => startEdit(eq)}>
                 <td className="px-5 py-3">
                   <span className="font-medium">{[eq.manufacturer, eq.model].filter(Boolean).join(" ") || eq.name}</span>
                 </td>
