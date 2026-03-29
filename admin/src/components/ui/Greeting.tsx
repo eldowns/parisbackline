@@ -23,8 +23,8 @@ export default function Greeting({ name }: { name: string }) {
   if (!greeting) return null;
 
   return (
-    <span className="text-text-secondary text-base">
-      {emoji} {greeting}, <span className="text-text-primary">{name}</span>
+    <span className="text-text-primary text-base">
+      {greeting}, {name} <span className="ml-1.5">{emoji}</span>
     </span>
   );
 }
