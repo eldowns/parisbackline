@@ -5,6 +5,7 @@ import Link from "next/link";
 import { calculatePayout } from "@/lib/revenue";
 import PayoutBreakdown from "@/components/bookings/PayoutBreakdown";
 import DeleteBookingButton from "@/components/bookings/DeleteBookingButton";
+import SendInvoiceButton from "@/components/bookings/SendInvoiceButton";
 
 export const dynamic = "force-dynamic";
 
@@ -191,6 +192,11 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
         <div className="col-span-1">
           <div className="sticky top-8">
             <PayoutBreakdown payout={payout} rentalFee={booking.rentalFee} deliveryFee={booking.deliveryFee} />
+            <SendInvoiceButton
+              bookingId={booking.id}
+              clientName={booking.client.name}
+              clientEmail={booking.client.email}
+            />
           </div>
         </div>
       </div>
