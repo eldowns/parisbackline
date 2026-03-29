@@ -4,10 +4,12 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { calculatePayout } from "@/lib/revenue";
 import PayoutBreakdown from "./PayoutBreakdown";
+import SendInvoiceButton from "./SendInvoiceButton";
 
 interface Client {
   id: string;
   name: string;
+  email?: string | null;
 }
 
 interface EquipmentItem {
@@ -528,6 +530,13 @@ export default function BookingForm({
       <div className="lg:col-span-1">
         <div className="sticky top-8">
           <PayoutBreakdown payout={payout} rentalFee={effectiveRentalFee} deliveryFee={form.deliveryFee} />
+          {isEdit && initialData?.id && (
+            <SendInvoiceButton
+              bookingId={initialData.id}
+              clientName={clients.find((c) => c.id === form.clientId)?.name || ""}
+              clientEmail={clients.find((c) => c.id === form.clientId)?.email || null}
+            />
+          )}
         </div>
       </div>
     </form>
