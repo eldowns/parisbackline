@@ -15,7 +15,7 @@ export default function DeleteBookingButton({ id }: { id: string }) {
   return (
     <button
       onClick={handleDelete}
-      className="bg-bg-tertiary border border-border text-danger hover:bg-danger/10 text-sm font-medium px-4 py-2.5 rounded-lg transition-colors cursor-pointer"
+      className="bg-bg-tertiary border border-border text-danger hover:bg-danger/10 text-sm font-medium px-4 py-2.5 rounded-none transition-colors cursor-pointer"
     >
       Delete
     </button>

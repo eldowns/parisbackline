@@ -81,8 +81,11 @@ function BookingRow({ b }: { b: BookingData }) {
       </div>
 
       {/* Expanded details */}
-      {open && (
-        <div className="px-5 pb-5 pt-1 ml-7 space-y-4">
+      <div
+        className="overflow-hidden transition-all duration-300 ease-in-out"
+        style={{ maxHeight: open ? "600px" : "0", opacity: open ? 1 : 0 }}
+      >
+        <div className="px-8 pb-6 pt-2 ml-7 mr-5 space-y-4">
           <div className="grid grid-cols-3 gap-6 text-sm">
             {/* Equipment */}
             {b.equipment.length > 0 && (
@@ -182,7 +185,7 @@ function BookingRow({ b }: { b: BookingData }) {
             </div>
           )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

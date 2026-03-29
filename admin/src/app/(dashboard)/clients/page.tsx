@@ -62,7 +62,7 @@ export default function ClientsPage() {
         </div>
         <button
           onClick={() => { resetForm(); setShowForm(true); }}
-          className="bg-accent hover:bg-accent-hover text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors cursor-pointer"
+          className="bg-accent hover:brightness-110 text-bg-primary text-sm font-medium px-4 py-2.5 transition-colors cursor-pointer"
         >
           + Add Client
         </button>
@@ -94,7 +94,7 @@ export default function ClientsPage() {
             </div>
           </div>
           <div className="flex gap-3">
-            <button type="submit" className="bg-accent hover:bg-accent-hover text-white text-sm font-medium px-4 py-2 rounded-lg cursor-pointer">
+            <button type="submit" className="bg-accent hover:brightness-110 text-bg-primary text-sm font-medium px-4 py-2 cursor-pointer">
               {editId ? "Update" : "Add Client"}
             </button>
             <button type="button" onClick={resetForm} className="text-text-secondary text-sm hover:text-text-primary cursor-pointer">Cancel</button>

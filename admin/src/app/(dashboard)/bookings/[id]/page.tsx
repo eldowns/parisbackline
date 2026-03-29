@@ -53,7 +53,7 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
         <div className="flex gap-3">
           <Link
             href={`/bookings/${booking.id}/edit`}
-            className="bg-accent hover:bg-accent-hover text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
+            className="bg-accent hover:brightness-110 text-bg-primary text-sm font-medium px-4 py-2.5 rounded-none transition-colors"
           >
             Edit Booking
           </Link>
@@ -126,7 +126,7 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
                 { label: "Invoicing", value: booking.invoicePartner },
                 { label: "Accounting", value: booking.accountPartner },
               ].map((r) => (
-                <div key={r.label} className="bg-bg-tertiary rounded-lg p-3 text-center">
+                <div key={r.label} className="bg-bg-tertiary rounded-none p-3 text-center">
                   <p className="text-text-muted text-xs uppercase tracking-wider mb-1">{r.label}</p>
                   <p className={`text-sm font-semibold ${r.value === "eric" ? "text-eric" : "text-marko"}`}>
                     {capitalize(r.value)}

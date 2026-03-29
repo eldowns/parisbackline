@@ -62,7 +62,7 @@ export default function CalendarPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-            className="bg-bg-tertiary border border-border text-text-secondary hover:text-text-primary p-2 rounded-lg transition-colors cursor-pointer"
+            className="bg-bg-tertiary border border-border text-text-secondary hover:text-text-primary p-2 rounded-none transition-colors cursor-pointer"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -70,13 +70,13 @@ export default function CalendarPage() {
           </button>
           <button
             onClick={() => setCurrentMonth(new Date())}
-            className="bg-bg-tertiary border border-border text-text-secondary hover:text-text-primary text-xs font-medium px-3 py-2 rounded-lg transition-colors cursor-pointer"
+            className="bg-bg-tertiary border border-border text-text-secondary hover:text-text-primary text-xs font-medium px-3 py-2 rounded-none transition-colors cursor-pointer"
           >
             Today
           </button>
           <button
             onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-            className="bg-bg-tertiary border border-border text-text-secondary hover:text-text-primary p-2 rounded-lg transition-colors cursor-pointer"
+            className="bg-bg-tertiary border border-border text-text-secondary hover:text-text-primary p-2 rounded-none transition-colors cursor-pointer"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -84,7 +84,7 @@ export default function CalendarPage() {
           </button>
           <Link
             href="/bookings/new"
-            className="bg-accent hover:bg-accent-hover text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors ml-2"
+            className="bg-accent hover:brightness-110 text-bg-primary text-sm font-medium px-4 py-2 rounded-none transition-colors ml-2"
           >
             + New Booking
           </Link>
