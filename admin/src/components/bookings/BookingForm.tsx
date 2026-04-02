@@ -113,7 +113,23 @@ export default function BookingForm({
     });
   }
 
-  const equipmentTotal = form.equipment.reduce((sum, e) => sum + e.rentalPrice * e.quantity, 0);
+  // Calculate billing days from date range using backline week rule (4 days = 1 week)
+  const rentalDays = useMemo(() => {
+    if (!form.dateStart || !form.dateEnd) return 0;
+    const start = new Date(form.dateStart + "T12:00:00Z");
+    const end = new Date(form.dateEnd + "T12:00:00Z");
+    const diff = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+    return Math.max(diff, 0);
+  }, [form.dateStart, form.dateEnd]);
+
+  const billingDays = useMemo(() => {
+    if (rentalDays === 0) return 0;
+    const weeks = Math.floor(rentalDays / 7);
+    const remaining = rentalDays % 7;
+    return weeks * 4 + Math.min(remaining, 4);
+  }, [rentalDays]);
+
+  const equipmentTotal = form.equipment.reduce((sum, e) => sum + e.rentalPrice * e.quantity * billingDays, 0);
 
   // Equipment availability check
   const [conflicts, setConflicts] = useState<Record<string, { totalBooked: number; bookings: { client: string }[] }>>({});
@@ -314,7 +330,14 @@ export default function BookingForm({
         {/* Equipment */}
         <div className={sectionClass}>
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-semibold text-text-primary">Equipment</h3>
+            <div>
+              <h3 className="text-sm font-semibold text-text-primary">Equipment</h3>
+              {rentalDays > 0 && (
+                <p className="text-xs text-text-muted mt-0.5">
+                  {rentalDays} {rentalDays === 1 ? "day" : "days"} &rarr; billed as {billingDays} {billingDays === 1 ? "day" : "days"}
+                </p>
+              )}
+            </div>
             <p className="text-sm font-semibold text-accent">Total: ${equipmentTotal.toFixed(2)}</p>
           </div>
 
@@ -352,7 +375,7 @@ export default function BookingForm({
                         />
                       </div>
                       <div>
-                        <label className="block text-text-muted text-[0.6rem] uppercase tracking-wider mb-0.5">Price ($)</label>
+                        <label className="block text-text-muted text-[0.6rem] uppercase tracking-wider mb-0.5">Rate ($)</label>
                         <input
                           type="number"
                           step="0.01"
