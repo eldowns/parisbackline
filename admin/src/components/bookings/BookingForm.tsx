@@ -119,7 +119,7 @@ export default function BookingForm({
     const start = new Date(form.dateStart + "T12:00:00Z");
     const end = new Date(form.dateEnd + "T12:00:00Z");
     const diff = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-    return Math.max(diff, 0);
+    return Math.max(diff + 1, 0);
   }, [form.dateStart, form.dateEnd]);
 
   const billingDays = useMemo(() => {
