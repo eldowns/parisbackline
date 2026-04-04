@@ -88,3 +88,29 @@ model SubRental {
   description String
   cost        Float
 }
+
+model PartnerSubmission {
+  id          String                    @id @default(cuid())
+  name        String
+  email       String
+  phone       String
+  address     String
+  bankAccount String
+  bankRouting String
+  status      String                    @default("pending")
+  createdAt   DateTime                  @default(now())
+  equipment   PartnerSubmissionItem[]
+}
+
+model PartnerSubmissionItem {
+  id           String             @id @default(cuid())
+  submissionId String
+  submission   PartnerSubmission  @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  manufacturer String
+  model        String
+  quantity     Int                @default(1)
+  rate         Float
+  internalValue Float
+  serialNumber String?
+  notes        String?
+}

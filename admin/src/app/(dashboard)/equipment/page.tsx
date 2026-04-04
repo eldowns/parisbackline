@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useToast } from "@/components/ui/Toast";
 
 interface EquipmentItem {
   id: string;
@@ -16,10 +17,34 @@ interface EquipmentItem {
   active: boolean;
 }
 
+interface SubmissionItem {
+  id: string;
+  manufacturer: string;
+  model: string;
+  quantity: number;
+  rate: number;
+  internalValue: number;
+  serialNumber: string | null;
+  notes: string | null;
+}
+
+interface Submission {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  createdAt: string;
+  equipment: SubmissionItem[];
+}
+
 const categories = ["Wireless Mic", "IEM", "Console", "Keyboard/Piano", "DI/Splitter", "Cable/Adapter", "Case/Rack", "Monitor", "Amplifier", "Other"];
+const PARTNERS = ["eric", "marko"];
 
 export default function EquipmentPage() {
+  const { addToast } = useToast();
   const [equipment, setEquipment] = useState<EquipmentItem[]>([]);
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
@@ -28,7 +53,14 @@ export default function EquipmentPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetch("/api/equipment").then((r) => r.json()).then((data) => { setEquipment(data); setLoading(false); });
+    Promise.all([
+      fetch("/api/equipment").then((r) => r.json()),
+      fetch("/api/partner").then((r) => r.json()),
+    ]).then(([eq, subs]) => {
+      setEquipment(eq);
+      setSubmissions(Array.isArray(subs) ? subs : []);
+      setLoading(false);
+    });
   }, []);
 
   function resetForm() {
@@ -70,9 +102,43 @@ export default function EquipmentPage() {
     setEquipment(equipment.map((e) => e.id === id ? { ...e, active: false } : e));
   }
 
-  const filtered = equipment.filter((e) =>
-    (filter === "" || e.owner === filter) && e.active
-  );
+  async function handleSubmission(id: string, status: "accepted" | "declined") {
+    const label = status === "accepted" ? "accept" : "decline";
+    if (!confirm(`Are you sure you want to ${label} this submission?`)) return;
+    try {
+      const res = await fetch(`/api/partner/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      if (res.ok) {
+        setSubmissions((prev) => prev.filter((s) => s.id !== id));
+        if (status === "accepted") {
+          const updated = await fetch("/api/equipment").then((r) => r.json());
+          setEquipment(updated);
+          addToast("Submission accepted — equipment added", "success");
+        } else {
+          addToast("Submission declined", "info");
+        }
+      }
+    } catch {
+      addToast("Something went wrong", "error");
+    }
+  }
+
+  function copyInviteLink() {
+    const url = `${window.location.origin}/partner`;
+    navigator.clipboard.writeText(url).then(() => {
+      addToast("Link copied!", "success");
+    });
+  }
+
+  const filtered = equipment.filter((e) => {
+    if (!e.active) return false;
+    if (filter === "") return true;
+    if (filter === "3rd-party") return !PARTNERS.includes(e.owner);
+    return e.owner === filter;
+  });
 
   const totalValue = filtered.reduce((sum, e) => sum + e.internalValue * e.quantity, 0);
 
@@ -85,28 +151,124 @@ export default function EquipmentPage() {
             {filtered.length} items &middot; ${totalValue.toLocaleString()} total value
           </p>
         </div>
-        <button
-          onClick={() => { resetForm(); setShowForm(true); }}
-          className="bg-accent hover:brightness-110 text-bg-primary text-[0.72rem] font-semibold uppercase tracking-[0.14em] px-4 py-2.5 transition-colors cursor-pointer"
-        >
-          + Add Equipment
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={copyInviteLink}
+            className="flex items-center gap-2 border border-accent/30 text-accent text-[0.72rem] font-semibold uppercase tracking-[0.14em] px-4 py-2.5 transition-colors cursor-pointer hover:bg-accent/10"
+            style={{ borderRadius: "1px" }}
+          >
+            Invite
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+            </svg>
+          </button>
+          <button
+            onClick={() => { resetForm(); setShowForm(true); }}
+            className="bg-accent hover:brightness-110 text-bg-primary text-[0.72rem] font-semibold uppercase tracking-[0.14em] px-4 py-2.5 transition-colors cursor-pointer"
+            style={{ borderRadius: "1px" }}
+          >
+            + Add Equipment
+          </button>
+        </div>
       </div>
 
       {/* Filter */}
       <div className="flex gap-2 mb-4">
-        {["", "eric", "marko"].map((f) => (
+        {[
+          { value: "", label: "All" },
+          { value: "eric", label: "Eric" },
+          { value: "marko", label: "Marko" },
+          { value: "3rd-party", label: "3rd Party" },
+        ].map((f) => (
           <button
-            key={f}
-            onClick={() => setFilter(f)}
+            key={f.value}
+            onClick={() => setFilter(f.value)}
             className={`text-xs font-medium px-3 py-1.5 rounded-none transition-colors cursor-pointer ${
-              filter === f ? "bg-accent text-bg-primary" : "bg-bg-tertiary text-text-secondary hover:text-text-primary border border-border"
+              filter === f.value ? "bg-accent text-bg-primary" : "bg-bg-tertiary text-text-secondary hover:text-text-primary border border-border"
             }`}
           >
-            {f === "" ? "All" : f.charAt(0).toUpperCase() + f.slice(1)}
+            {f.label}
           </button>
         ))}
       </div>
+
+      {/* Pending Submissions */}
+      {submissions.length > 0 && (
+        <div className="mb-6 space-y-4">
+          <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-text-muted">
+            Pending Submissions
+            <span className="ml-2 inline-flex items-center justify-center w-5 h-5 text-[0.6rem] font-bold bg-warning/20 text-warning rounded-full">
+              {submissions.length}
+            </span>
+          </h2>
+          {submissions.map((sub) => (
+            <div
+              key={sub.id}
+              className="bg-bg-secondary border border-border overflow-hidden"
+              style={{ borderRadius: "1px" }}
+            >
+              <div className="px-5 py-4 border-b border-border flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                <div>
+                  <p className="text-sm font-semibold">{sub.name}</p>
+                  <p className="text-text-muted text-xs">
+                    {sub.email} &middot; {sub.phone}
+                    {sub.address && <span> &middot; {sub.address}</span>}
+                  </p>
+                  <p className="text-text-muted text-[0.65rem] mt-1">
+                    Submitted {new Date(sub.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleSubmission(sub.id, "accepted")}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium uppercase tracking-wider text-success border border-success/30 hover:bg-success/10 transition-colors cursor-pointer"
+                    style={{ borderRadius: "1px" }}
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Accept
+                  </button>
+                  <button
+                    onClick={() => handleSubmission(sub.id, "declined")}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium uppercase tracking-wider text-danger border border-danger/30 hover:bg-danger/10 transition-colors cursor-pointer"
+                    style={{ borderRadius: "1px" }}
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    Decline
+                  </button>
+                </div>
+              </div>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border text-text-muted text-xs uppercase tracking-wider">
+                    <th className="text-left px-5 py-2 font-medium">Equipment</th>
+                    <th className="text-center px-5 py-2 font-medium">Qty</th>
+                    <th className="text-right px-5 py-2 font-medium">Rate</th>
+                    <th className="text-right px-5 py-2 font-medium hidden md:table-cell">Value</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {sub.equipment.map((item) => (
+                    <tr key={item.id}>
+                      <td className="px-5 py-2.5">
+                        <span className="font-medium">{item.manufacturer} {item.model}</span>
+                        {item.serialNumber && <span className="text-text-muted text-xs ml-2">SN: {item.serialNumber}</span>}
+                        {item.notes && <p className="text-text-muted text-xs mt-0.5">{item.notes}</p>}
+                      </td>
+                      <td className="px-5 py-2.5 text-center">{item.quantity}</td>
+                      <td className="px-5 py-2.5 text-right text-accent">${item.rate.toFixed(2)}/day</td>
+                      <td className="px-5 py-2.5 text-right hidden md:table-cell">${item.internalValue.toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Modal */}
       {showForm && (

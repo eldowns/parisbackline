@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface EquipmentLine {
   manufacturer: string;
@@ -23,6 +24,7 @@ const emptyLine = (): EquipmentLine => ({
 });
 
 export default function PartnerOnboardingPage() {
+  const router = useRouter();
   const [contact, setContact] = useState({
     name: "",
     phone: "",
@@ -34,7 +36,6 @@ export default function PartnerOnboardingPage() {
   const [lines, setLines] = useState<EquipmentLine[]>([emptyLine()]);
   const [agreed, setAgreed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
 
   function updateLine(i: number, patch: Partial<EquipmentLine>) {
     setLines((prev) => prev.map((l, j) => (j === i ? { ...l, ...patch } : l)));
@@ -56,31 +57,12 @@ export default function PartnerOnboardingPage() {
         body: JSON.stringify({ contact, equipment: lines }),
       });
       if (!res.ok) throw new Error("Failed");
-      setSubmitted(true);
+      router.push("/partner/thank-you");
     } catch {
       alert("Something went wrong. Please try again or contact us directly.");
     } finally {
       setSubmitting(false);
     }
-  }
-
-  if (submitted) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-6" style={{ background: "#09090f" }}>
-        <div className="max-w-md w-full text-center">
-          <h1
-            className="text-4xl mb-4"
-            style={{ fontFamily: "'Bebas Neue', sans-serif", color: "#c8a44a", letterSpacing: "0.06em" }}
-          >
-            APPLICATION RECEIVED
-          </h1>
-          <p style={{ color: "#a0a0b0", fontSize: "0.9rem", lineHeight: 1.7 }}>
-            Thank you for your interest in partnering with Paris Backline. We&apos;ll review your submission
-            and be in touch shortly.
-          </p>
-        </div>
-      </div>
-    );
   }
 
   const inputClass =
@@ -135,8 +117,8 @@ export default function PartnerOnboardingPage() {
             </p>
             <p className="mb-4">
               <strong style={{ color: "#e0e0e8" }}>Revenue split:</strong> You receive{" "}
-              <strong style={{ color: "#c8a44a" }}>70%</strong> of the rental fee for your equipment.
-              Paris Backline retains 30% to cover client acquisition, booking management, invoicing, logistics
+              <strong style={{ color: "#c8a44a" }}>50%</strong> of the rental fee for your equipment.
+              Paris Backline retains 50% to cover client acquisition, booking management, invoicing, logistics
               coordination, and insurance administration.
             </p>
             <p className="mb-4">

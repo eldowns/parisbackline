@@ -1,8 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
+import { prisma } from "@/lib/prisma";
 
 function getResend() {
   return new Resend(process.env.RESEND_API_KEY);
+}
+
+export async function GET() {
+  try {
+    const submissions = await prisma.partnerSubmission.findMany({
+      where: { status: "pending" },
+      include: { equipment: true },
+      orderBy: { createdAt: "desc" },
+    });
+    return NextResponse.json(submissions);
+  } catch (err) {
+    console.error("Partner list error:", err);
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -12,6 +27,28 @@ export async function POST(request: NextRequest) {
     if (!contact?.name || !contact?.email || !contact?.phone) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
+
+    await prisma.partnerSubmission.create({
+      data: {
+        name: contact.name,
+        email: contact.email,
+        phone: contact.phone,
+        address: contact.address || "",
+        bankAccount: contact.bankAccount || "",
+        bankRouting: contact.bankRouting || "",
+        equipment: {
+          create: equipment.map((e: { manufacturer: string; model: string; quantity: number; rate: number; internalValue: number; serialNumber?: string; notes?: string }) => ({
+            manufacturer: e.manufacturer,
+            model: e.model,
+            quantity: e.quantity || 1,
+            rate: e.rate || 0,
+            internalValue: e.internalValue || 0,
+            serialNumber: e.serialNumber || null,
+            notes: e.notes || null,
+          })),
+        },
+      },
+    });
 
     const equipmentRows = equipment
       .map(
