@@ -100,14 +100,18 @@ export async function POST(request: NextRequest) {
       </div>
     `;
 
-    const resend = getResend();
-    await resend.emails.send({
-      from: "Paris Backline <accounting@parisbackline.com>",
-      replyTo: "parisbackline@gmail.com",
-      to: ["parisbackline@gmail.com"],
-      subject: `Partner Application: ${contact.name}`,
-      html,
-    });
+    try {
+      const resend = getResend();
+      await resend.emails.send({
+        from: "Paris Backline <accounting@parisbackline.com>",
+        replyTo: "parisbackline@gmail.com",
+        to: ["parisbackline@gmail.com"],
+        subject: `Partner Application: ${contact.name}`,
+        html,
+      });
+    } catch (emailErr) {
+      console.error("Partner notification email failed:", emailErr);
+    }
 
     return NextResponse.json({ ok: true });
   } catch (err) {
