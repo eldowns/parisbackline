@@ -20,6 +20,7 @@ interface EquipmentItem {
   name: string;
   category: string;
   owner: string;
+  dayRate: number;
   internalValue: number;
 }
 
@@ -98,7 +99,9 @@ export default function BookingForm({
   // Equipment
   function addEquipment(eqId: string) {
     if (form.equipment.find((e) => e.equipmentId === eqId)) return;
-    update({ equipment: [...form.equipment, { equipmentId: eqId, quantity: 1, rentalPrice: 0 }] });
+    const eq = equipment.find((e) => e.id === eqId);
+    const rate = eq?.dayRate || 0;
+    update({ equipment: [...form.equipment, { equipmentId: eqId, quantity: 1, rentalPrice: rate }] });
   }
 
   function removeEquipment(eqId: string) {

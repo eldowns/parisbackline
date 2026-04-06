@@ -11,6 +11,7 @@ interface EquipmentItem {
   category: string;
   owner: string;
   quantity: number;
+  dayRate: number;
   internalValue: number;
   serialNumber: string | null;
   notes: string | null;
@@ -48,7 +49,7 @@ export default function EquipmentPage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-  const [form, setForm] = useState({ manufacturer: "", model: "", category: "Wireless Mic", owner: "eric", quantity: 1, internalValue: 0, serialNumber: "", notes: "" });
+  const [form, setForm] = useState({ manufacturer: "", model: "", category: "Wireless Mic", owner: "eric", quantity: 1, dayRate: 0, internalValue: 0, serialNumber: "", notes: "" });
   const [ownerType, setOwnerType] = useState<"eric" | "marko" | "3rd-party">("eric");
   const [ownerCustom, setOwnerCustom] = useState("");
   const [filter, setFilter] = useState("");
@@ -66,7 +67,7 @@ export default function EquipmentPage() {
   }, []);
 
   function resetForm() {
-    setForm({ manufacturer: "", model: "", category: "Wireless Mic", owner: "eric", quantity: 1, internalValue: 0, serialNumber: "", notes: "" });
+    setForm({ manufacturer: "", model: "", category: "Wireless Mic", owner: "eric", quantity: 1, dayRate: 0, internalValue: 0, serialNumber: "", notes: "" });
     setOwnerType("eric");
     setOwnerCustom("");
     setEditId(null);
@@ -78,7 +79,7 @@ export default function EquipmentPage() {
     const isPartner = PARTNERS.includes(eq.owner);
     setOwnerType(isPartner ? eq.owner as "eric" | "marko" : "3rd-party");
     setOwnerCustom(isPartner ? "" : eq.owner);
-    setForm({ manufacturer: eq.manufacturer || "", model: eq.model || "", category: eq.category, owner: eq.owner, quantity: eq.quantity, internalValue: eq.internalValue, serialNumber: eq.serialNumber || "", notes: eq.notes || "" });
+    setForm({ manufacturer: eq.manufacturer || "", model: eq.model || "", category: eq.category, owner: eq.owner, quantity: eq.quantity, dayRate: eq.dayRate, internalValue: eq.internalValue, serialNumber: eq.serialNumber || "", notes: eq.notes || "" });
     setEditId(eq.id);
     setShowForm(true);
   }
@@ -282,8 +283,8 @@ export default function EquipmentPage() {
 
       {/* Modal */}
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={resetForm}>
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center" onMouseDown={(e) => { if (e.target === e.currentTarget) resetForm(); }}>
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onMouseDown={(e) => { if (e.target === e.currentTarget) resetForm(); }} />
           <form
             onSubmit={handleSubmit}
             onClick={(e) => e.stopPropagation()}
@@ -339,6 +340,10 @@ export default function EquipmentPage() {
               <div>
                 <label className="block text-text-muted text-[0.65rem] font-semibold mb-2 uppercase tracking-[0.18em]">Quantity</label>
                 <input type="number" min={1} value={form.quantity} onChange={(e) => setForm({ ...form, quantity: parseInt(e.target.value) || 1 })} className="w-full" required />
+              </div>
+              <div>
+                <label className="block text-text-muted text-[0.65rem] font-semibold mb-2 uppercase tracking-[0.18em]">Day Rate ($)</label>
+                <input type="number" step="0.01" value={form.dayRate || ""} onChange={(e) => setForm({ ...form, dayRate: parseFloat(e.target.value) || 0 })} className="w-full" placeholder="0.00" />
               </div>
               <div>
                 <label className="block text-text-muted text-[0.65rem] font-semibold mb-2 uppercase tracking-[0.18em]">Internal Value ($)</label>

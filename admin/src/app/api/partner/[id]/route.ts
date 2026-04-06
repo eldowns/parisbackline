@@ -31,6 +31,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             category: "Other",
             owner: ownerName,
             quantity: item.quantity,
+            dayRate: item.rate,
             internalValue: item.internalValue,
             serialNumber: item.serialNumber,
             notes: item.notes,
