@@ -30,8 +30,6 @@ export default function PartnerOnboardingPage() {
     phone: "",
     email: "",
     address: "",
-    bankAccount: "",
-    bankRouting: "",
   });
   const [lines, setLines] = useState<EquipmentLine[]>([emptyLine()]);
   const [agreed, setAgreed] = useState(false);
@@ -212,50 +210,6 @@ export default function PartnerOnboardingPage() {
               />
             </div>
 
-            <div
-              className="border-t pt-6"
-              style={{ borderColor: "#2a2a3a" }}
-            >
-              <h3
-                className="text-sm font-medium uppercase tracking-wider mb-4"
-                style={{ color: "#6a6a7a", letterSpacing: "0.14em" }}
-              >
-                Banking Information
-              </h3>
-              <p className="text-xs mb-4" style={{ color: "#55556a", lineHeight: 1.6 }}>
-                Used for direct deposit of your rental earnings. This information is kept confidential.
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className={labelClass} style={labelStyle}>Account Number *</label>
-                  <input
-                    required
-                    type="text"
-                    value={contact.bankAccount}
-                    onChange={(e) => setContact({ ...contact, bankAccount: e.target.value })}
-                    className={inputClass}
-                    style={inputStyle}
-                    onFocus={(e) => Object.assign(e.target.style, focusStyle)}
-                    onBlur={(e) => Object.assign(e.target.style, { borderColor: "#2a2a3a" })}
-                    placeholder="Account number"
-                  />
-                </div>
-                <div>
-                  <label className={labelClass} style={labelStyle}>Routing Number *</label>
-                  <input
-                    required
-                    type="text"
-                    value={contact.bankRouting}
-                    onChange={(e) => setContact({ ...contact, bankRouting: e.target.value })}
-                    className={inputClass}
-                    style={inputStyle}
-                    onFocus={(e) => Object.assign(e.target.style, focusStyle)}
-                    onBlur={(e) => Object.assign(e.target.style, { borderColor: "#2a2a3a" })}
-                    placeholder="Routing number"
-                  />
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* Equipment */}

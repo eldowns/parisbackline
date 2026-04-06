@@ -314,10 +314,7 @@ export default function EquipmentPage() {
               </div>
               <div>
                 <label className="block text-text-muted text-[0.65rem] font-semibold mb-2 uppercase tracking-[0.18em]">Owner</label>
-                <select value={form.owner} onChange={(e) => setForm({ ...form, owner: e.target.value })} className="w-full">
-                  <option value="eric">Eric</option>
-                  <option value="marko">Marko</option>
-                </select>
+                <input value={form.owner} onChange={(e) => setForm({ ...form, owner: e.target.value.toLowerCase() })} className="w-full" placeholder="e.g., eric, marko" required />
               </div>
               <div>
                 <label className="block text-text-muted text-[0.65rem] font-semibold mb-2 uppercase tracking-[0.18em]">Quantity</label>

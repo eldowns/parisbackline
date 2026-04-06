@@ -77,8 +77,6 @@ export async function POST(request: NextRequest) {
           <tr><td style="padding:4px 0;color:#6a6a7a">Phone</td><td style="color:#e0e0e8">${contact.phone}</td></tr>
           <tr><td style="padding:4px 0;color:#6a6a7a">Email</td><td style="color:#e0e0e8">${contact.email}</td></tr>
           <tr><td style="padding:4px 0;color:#6a6a7a">Address</td><td style="color:#e0e0e8">${contact.address}</td></tr>
-          <tr><td style="padding:4px 0;color:#6a6a7a">Account #</td><td style="color:#e0e0e8">${contact.bankAccount}</td></tr>
-          <tr><td style="padding:4px 0;color:#6a6a7a">Routing #</td><td style="color:#e0e0e8">${contact.bankRouting}</td></tr>
         </table>
 
         <h2 style="color:#c8a44a;font-size:16px;border-bottom:1px solid #2a2a3a;padding-bottom:8px">Equipment (${equipment.length} item${equipment.length !== 1 ? "s" : ""})</h2>
