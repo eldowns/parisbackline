@@ -5,7 +5,7 @@ const secret = new TextEncoder().encode(
   process.env.JWT_SECRET || "paris-backline-secret-key-change-in-production"
 );
 
-const publicPaths = ["/", "/login", "/api/auth"];
+const publicPaths = ["/", "/login", "/api/auth", "/partner"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
