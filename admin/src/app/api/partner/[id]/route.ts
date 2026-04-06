@@ -20,7 +20,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     }
 
     if (status === "accepted") {
-      const ownerName = submission.name.toLowerCase().replace(/\s+/g, "-");
+      const ownerName = submission.name.trim();
 
       for (const item of submission.equipment) {
         await prisma.equipment.create({

@@ -49,6 +49,8 @@ export default function EquipmentPage() {
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState({ manufacturer: "", model: "", category: "Wireless Mic", owner: "eric", quantity: 1, internalValue: 0, serialNumber: "", notes: "" });
+  const [ownerType, setOwnerType] = useState<"eric" | "marko" | "3rd-party">("eric");
+  const [ownerCustom, setOwnerCustom] = useState("");
   const [filter, setFilter] = useState("");
   const [error, setError] = useState("");
 
@@ -65,12 +67,17 @@ export default function EquipmentPage() {
 
   function resetForm() {
     setForm({ manufacturer: "", model: "", category: "Wireless Mic", owner: "eric", quantity: 1, internalValue: 0, serialNumber: "", notes: "" });
+    setOwnerType("eric");
+    setOwnerCustom("");
     setEditId(null);
     setShowForm(false);
     setError("");
   }
 
   function startEdit(eq: EquipmentItem) {
+    const isPartner = PARTNERS.includes(eq.owner);
+    setOwnerType(isPartner ? eq.owner as "eric" | "marko" : "3rd-party");
+    setOwnerCustom(isPartner ? "" : eq.owner);
     setForm({ manufacturer: eq.manufacturer || "", model: eq.model || "", category: eq.category, owner: eq.owner, quantity: eq.quantity, internalValue: eq.internalValue, serialNumber: eq.serialNumber || "", notes: eq.notes || "" });
     setEditId(eq.id);
     setShowForm(true);
@@ -79,10 +86,13 @@ export default function EquipmentPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    const resolvedOwner = ownerType === "3rd-party" ? ownerCustom.trim() : ownerType;
+    if (!resolvedOwner) { setError("Please enter the 3rd party owner name"); return; }
+    const payload = { ...form, owner: resolvedOwner };
     const url = editId ? `/api/equipment/${editId}` : "/api/equipment";
     const method = editId ? "PUT" : "POST";
     try {
-      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
+      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       if (res.ok) {
         const updated = await fetch("/api/equipment").then((r) => r.json());
         setEquipment(updated);
@@ -314,8 +324,18 @@ export default function EquipmentPage() {
               </div>
               <div>
                 <label className="block text-text-muted text-[0.65rem] font-semibold mb-2 uppercase tracking-[0.18em]">Owner</label>
-                <input value={form.owner} onChange={(e) => setForm({ ...form, owner: e.target.value.toLowerCase() })} className="w-full" placeholder="e.g., eric, marko" required />
+                <select value={ownerType} onChange={(e) => { setOwnerType(e.target.value as "eric" | "marko" | "3rd-party"); if (e.target.value !== "3rd-party") setOwnerCustom(""); }} className="w-full">
+                  <option value="eric">Eric</option>
+                  <option value="marko">Marko</option>
+                  <option value="3rd-party">3rd Party</option>
+                </select>
               </div>
+              {ownerType === "3rd-party" && (
+              <div>
+                <label className="block text-text-muted text-[0.65rem] font-semibold mb-2 uppercase tracking-[0.18em]">Partner Name</label>
+                <input value={ownerCustom} onChange={(e) => setOwnerCustom(e.target.value)} className="w-full" placeholder="e.g., Zach Jurkovich" required />
+              </div>
+              )}
               <div>
                 <label className="block text-text-muted text-[0.65rem] font-semibold mb-2 uppercase tracking-[0.18em]">Quantity</label>
                 <input type="number" min={1} value={form.quantity} onChange={(e) => setForm({ ...form, quantity: parseInt(e.target.value) || 1 })} className="w-full" required />
