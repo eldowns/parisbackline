@@ -87,7 +87,8 @@ export default function SendInvoiceModal({ bookingId, clientName, clientEmail, o
   }
 
   const d = preview?.invoiceData;
-  const equipTotal = d?.equipment.reduce((s, e) => s + e.rentalPrice * e.quantity, 0) || 0;
+  const days = d?.billingDays || 1;
+  const equipTotal = d?.equipment.reduce((s, e) => s + e.rentalPrice * e.quantity * days, 0) || 0;
   const subTotal = d?.subRentals.reduce((s, sr) => s + sr.cost, 0) || 0;
 
   return (
@@ -161,8 +162,8 @@ export default function SendInvoiceModal({ bookingId, clientName, clientEmail, o
                   <div className="border border-border p-3 space-y-1">
                     {d.equipment.map((e, i) => (
                       <div key={i} className="flex justify-between text-xs">
-                        <span className="text-text-secondary">{e.name} x{e.quantity}</span>
-                        <span className="text-text-primary">${(e.rentalPrice * e.quantity).toFixed(2)}</span>
+                        <span className="text-text-secondary">{e.name} x{e.quantity}{days > 1 ? ` x${days}d` : ""}</span>
+                        <span className="text-text-primary">${(e.rentalPrice * e.quantity * days).toFixed(2)}</span>
                       </div>
                     ))}
                     {d.subRentals.map((sr, i) => (
@@ -171,6 +172,16 @@ export default function SendInvoiceModal({ bookingId, clientName, clientEmail, o
                         <span className="text-text-primary">${sr.cost.toFixed(2)}</span>
                       </div>
                     ))}
+                    {d.discountValue > 0 && (() => {
+                      const subtotal = equipTotal + subTotal;
+                      const disc = d.discountType === "percent" ? subtotal * (d.discountValue / 100) : d.discountValue;
+                      return (
+                        <div className="flex justify-between text-xs">
+                          <span className="text-text-secondary">Discount{d.discountType === "percent" ? ` (${d.discountValue}%)` : ""}</span>
+                          <span className="text-accent">−${disc.toFixed(2)}</span>
+                        </div>
+                      );
+                    })()}
                     {d.deliveryFee > 0 && (
                       <div className="flex justify-between text-xs">
                         <span className="text-text-secondary">Delivery</span>

@@ -42,6 +42,14 @@ export async function POST(request: NextRequest) {
       day: "numeric",
     });
 
+    // Calculate billing days using same logic as BookingForm
+    const start = new Date(booking.dateStart);
+    const end = new Date(booking.dateEnd);
+    const rentalDays = Math.max(Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1, 0);
+    const weeks = Math.floor(rentalDays / 7);
+    const remaining = rentalDays % 7;
+    const billingDays = rentalDays === 0 ? 0 : weeks * 4 + Math.min(remaining, 4);
+
     const invoiceData = {
       invoiceNumber,
       date: today,
@@ -53,6 +61,7 @@ export async function POST(request: NextRequest) {
       },
       dateStart: formatDateUTC(booking.dateStart),
       dateEnd: formatDateUTC(booking.dateEnd),
+      billingDays,
       equipment: booking.equipment.map((be) => ({
         name: [be.equipment.manufacturer, be.equipment.model].filter(Boolean).join(" ") || be.equipment.name,
         quantity: be.quantity,
@@ -69,7 +78,7 @@ export async function POST(request: NextRequest) {
       notes: booking.notes,
     };
 
-    const equipmentTotal = invoiceData.equipment.reduce((s, e) => s + e.rentalPrice * e.quantity, 0);
+    const equipmentTotal = invoiceData.equipment.reduce((s, e) => s + e.rentalPrice * e.quantity * billingDays, 0);
     const subRentalTotal = invoiceData.subRentals.reduce((s, sr) => s + sr.cost, 0);
     const subtotal = equipmentTotal + subRentalTotal;
     const discountAmount =
