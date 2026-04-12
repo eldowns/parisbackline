@@ -235,13 +235,22 @@ interface InvoiceData {
     cost: number;
   }[];
   deliveryFee: number;
+  discountType?: "amount" | "percent";
+  discountValue?: number;
   notes?: string | null;
 }
 
 export function InvoicePDF({ data }: { data: InvoiceData }) {
   const equipmentTotal = data.equipment.reduce((s, e) => s + e.rentalPrice * e.quantity, 0);
   const subRentalTotal = data.subRentals.reduce((s, sr) => s + sr.cost, 0);
-  const grandTotal = equipmentTotal + subRentalTotal + data.deliveryFee;
+  const subtotal = equipmentTotal + subRentalTotal;
+  const discountAmount =
+    data.discountValue && data.discountValue > 0
+      ? data.discountType === "percent"
+        ? subtotal * (data.discountValue / 100)
+        : data.discountValue
+      : 0;
+  const grandTotal = subtotal - discountAmount + data.deliveryFee;
 
   return (
     <Document>
@@ -322,6 +331,14 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
             <View style={s.totalRow}>
               <Text style={s.totalLabel}>Sub-Rentals</Text>
               <Text style={s.totalValue}>${subRentalTotal.toFixed(2)}</Text>
+            </View>
+          )}
+          {discountAmount > 0 && (
+            <View style={s.totalRow}>
+              <Text style={s.totalLabel}>
+                Discount{data.discountType === "percent" ? ` (${data.discountValue}%)` : ""}
+              </Text>
+              <Text style={s.totalValue}>−${discountAmount.toFixed(2)}</Text>
             </View>
           )}
           {data.deliveryFee > 0 && (

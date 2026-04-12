@@ -87,7 +87,14 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
               </div>
               <div>
                 <p className="text-text-muted text-xs uppercase tracking-wider mb-1">Rental Fee</p>
-                <p className="font-semibold">${booking.rentalFee.toLocaleString()}</p>
+                <p className="font-semibold">
+                  ${booking.rentalFee.toLocaleString()}
+                  {booking.discountValue > 0 && (
+                    <span className="text-text-muted font-normal text-sm ml-1">
+                      ({booking.discountType === "percent" ? `${booking.discountValue}%` : `$${booking.discountValue}`} discount)
+                    </span>
+                  )}
+                </p>
               </div>
               <div>
                 <p className="text-text-muted text-xs uppercase tracking-wider mb-1">Delivery Fee</p>

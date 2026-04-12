@@ -64,12 +64,21 @@ export async function POST(request: NextRequest) {
         cost: sr.cost,
       })),
       deliveryFee: booking.deliveryFee,
+      discountType: booking.discountType as "amount" | "percent",
+      discountValue: booking.discountValue,
       notes: booking.notes,
     };
 
     const equipmentTotal = invoiceData.equipment.reduce((s, e) => s + e.rentalPrice * e.quantity, 0);
     const subRentalTotal = invoiceData.subRentals.reduce((s, sr) => s + sr.cost, 0);
-    const grandTotal = equipmentTotal + subRentalTotal + invoiceData.deliveryFee;
+    const subtotal = equipmentTotal + subRentalTotal;
+    const discountAmount =
+      booking.discountValue > 0
+        ? booking.discountType === "percent"
+          ? subtotal * (booking.discountValue / 100)
+          : booking.discountValue
+        : 0;
+    const grandTotal = subtotal - discountAmount + invoiceData.deliveryFee;
 
     // Generate PDF
     const pdfBuffer = await renderToBuffer(
