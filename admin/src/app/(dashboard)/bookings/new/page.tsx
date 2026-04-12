@@ -36,6 +36,8 @@ export default async function NewBookingPage({
         referralFee: sourceBooking.referralFee,
         referralPercent: sourceBooking.referralPercent,
         referralName: sourceBooking.referralName || "",
+        discountType: (sourceBooking.discountType as "amount" | "percent") || "amount",
+        discountValue: sourceBooking.discountValue || 0,
         leadPartner: sourceBooking.leadPartner,
         commPartner: sourceBooking.commPartner,
         invoicePartner: sourceBooking.invoicePartner,

@@ -42,6 +42,8 @@ interface BookingData {
   referralFee: number;
   referralPercent: number;
   referralName: string;
+  discountType: "amount" | "percent";
+  discountValue: number;
   leadPartner: string;
   commPartner: string;
   invoicePartner: string;
@@ -76,6 +78,8 @@ export default function BookingForm({
       referralFee: 0,
       referralPercent: 10,
       referralName: "",
+      discountType: "amount",
+      discountValue: 0,
       leadPartner: "eric",
       commPartner: "eric",
       invoicePartner: "eric",
@@ -165,8 +169,15 @@ export default function BookingForm({
     update({ subRentals: form.subRentals.filter((_, i) => i !== idx) });
   }
 
-  // Referral fee calculated from % of rental total (not including delivery)
-  const effectiveRentalFee = equipmentTotal > 0 ? equipmentTotal : form.rentalFee;
+  // Rental subtotal before discount
+  const rentalSubtotal = equipmentTotal > 0 ? equipmentTotal : form.rentalFee;
+  const discountAmount =
+    form.discountType === "percent"
+      ? rentalSubtotal * (Math.max(0, form.discountValue) / 100)
+      : Math.max(0, form.discountValue);
+  const effectiveRentalFee = Math.max(0, rentalSubtotal - discountAmount);
+
+  // Referral fee calculated from % of discounted rental total (not including delivery)
   const calculatedReferralFee = form.referralName
     ? effectiveRentalFee * (form.referralPercent / 100)
     : 0;
@@ -225,6 +236,8 @@ export default function BookingForm({
           ...form,
           rentalFee: effectiveRentalFee,
           referralFee: calculatedReferralFee,
+          discountType: form.discountType,
+          discountValue: form.discountValue,
           ...(statusOverride ? { status: statusOverride } : {}),
         }),
       });
@@ -452,6 +465,57 @@ export default function BookingForm({
           {form.subRentals.length === 0 && (
             <p className="text-text-muted text-sm text-center py-2">No sub-rentals for this booking</p>
           )}
+        </div>
+
+        {/* Discount */}
+        <div className={sectionClass}>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-sm font-semibold text-text-primary">Discount</h3>
+            {discountAmount > 0 && (
+              <p className="text-sm font-semibold text-accent">
+                −${discountAmount.toFixed(2)}
+              </p>
+            )}
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className={labelClass}>Type</label>
+              <select
+                value={form.discountType}
+                onChange={(e) => update({ discountType: e.target.value as "amount" | "percent" })}
+                className="w-full"
+              >
+                <option value="amount">$ Amount</option>
+                <option value="percent">% Percent</option>
+              </select>
+            </div>
+            <div>
+              <label className={labelClass}>
+                {form.discountType === "percent" ? "Discount (%)" : "Discount ($)"}
+              </label>
+              <input
+                type="number"
+                step={form.discountType === "percent" ? "0.5" : "0.01"}
+                min={0}
+                max={form.discountType === "percent" ? 100 : undefined}
+                value={form.discountValue || ""}
+                onChange={(e) => update({ discountValue: parseFloat(e.target.value) || 0 })}
+                className="w-full"
+                placeholder="0"
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Rental After Discount</label>
+              <p className="text-sm font-semibold text-text-primary py-2">
+                ${effectiveRentalFee.toFixed(2)}
+                {discountAmount > 0 && (
+                  <span className="text-text-muted font-normal ml-1">
+                    (from ${rentalSubtotal.toFixed(2)})
+                  </span>
+                )}
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Delivery */}

@@ -30,6 +30,8 @@ export default async function EditBookingPage({ params }: { params: Promise<{ id
     referralFee: booking.referralFee,
     referralPercent: booking.referralPercent,
     referralName: booking.referralName || "",
+    discountType: (booking.discountType as "amount" | "percent") || "amount",
+    discountValue: booking.discountValue || 0,
     leadPartner: booking.leadPartner,
     commPartner: booking.commPartner,
     invoicePartner: booking.invoicePartner,

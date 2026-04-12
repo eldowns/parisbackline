@@ -57,6 +57,8 @@ model Booking {
   referralFee     Float              @default(0)
   referralPercent Float              @default(10)
   referralName    String?
+  discountType    String             @default("amount")
+  discountValue   Float              @default(0)
   leadPartner     String
   commPartner     String
   invoicePartner  String

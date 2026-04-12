@@ -33,6 +33,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       referralFee: body.referralFee || 0,
       referralPercent: body.referralPercent || 10,
       referralName: body.referralName,
+      discountType: body.discountType || "amount",
+      discountValue: body.discountValue || 0,
       leadPartner: body.leadPartner,
       commPartner: body.commPartner,
       invoicePartner: body.invoicePartner,

@@ -35,6 +35,8 @@ export async function POST(request: NextRequest) {
         referralFee: body.referralFee || 0,
         referralPercent: body.referralPercent || 10,
         referralName: body.referralName || null,
+        discountType: body.discountType || "amount",
+        discountValue: body.discountValue || 0,
         leadPartner: body.leadPartner,
         commPartner: body.commPartner,
         invoicePartner: body.invoicePartner,
