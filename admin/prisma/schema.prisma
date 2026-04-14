@@ -37,7 +37,7 @@ model Equipment {
   quantity      Int                @default(1)
   dayRate       Float              @default(0)
   internalValue Float
-  serialNumber  String?
+  serialNumbers String[]           @default([])
   notes         String?
   active        Boolean            @default(true)
   createdAt     DateTime           @default(now())
@@ -81,6 +81,8 @@ model BookingEquipment {
   equipment   Equipment @relation(fields: [equipmentId], references: [id])
   quantity    Int       @default(1)
   rentalPrice Float     @default(0)
+
+  @@unique([bookingId, equipmentId])
 }
 
 model SubRental {

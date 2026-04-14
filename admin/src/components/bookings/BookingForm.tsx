@@ -359,12 +359,12 @@ export default function BookingForm({
 
           {form.equipment.length > 0 && (
             <div className="space-y-2 mb-4">
-              {form.equipment.map((fe) => {
+              {form.equipment.map((fe, idx) => {
                 const eq = equipment.find((e) => e.id === fe.equipmentId);
                 if (!eq) return null;
                 const displayName = [eq.manufacturer, eq.model].filter(Boolean).join(" ") || eq.name;
                 return (
-                  <div key={fe.equipmentId} className="flex items-center gap-3 p-3 bg-accent/5" style={{ borderRadius: "1px" }}>
+                  <div key={`${fe.equipmentId}-${idx}`} className="flex items-center gap-3 p-3 bg-accent/5" style={{ borderRadius: "1px" }}>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{displayName}</p>
                       <p className="text-xs text-text-muted">

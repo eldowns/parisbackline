@@ -13,7 +13,7 @@ interface EquipmentItem {
   quantity: number;
   dayRate: number;
   internalValue: number;
-  serialNumber: string | null;
+  serialNumbers: string[];
   notes: string | null;
   active: boolean;
 }
@@ -49,7 +49,7 @@ export default function EquipmentPage() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-  const [form, setForm] = useState({ manufacturer: "", model: "", category: "Wireless Mic", owner: "eric", quantity: 1, dayRate: 0, internalValue: 0, serialNumber: "", notes: "" });
+  const [form, setForm] = useState({ manufacturer: "", model: "", category: "Wireless Mic", owner: "eric", quantity: 1, dayRate: 0, internalValue: 0, serialNumbers: [] as string[], notes: "" });
   const [ownerType, setOwnerType] = useState<"eric" | "marko" | "3rd-party">("eric");
   const [ownerCustom, setOwnerCustom] = useState("");
   const [filter, setFilter] = useState("");
@@ -67,7 +67,7 @@ export default function EquipmentPage() {
   }, []);
 
   function resetForm() {
-    setForm({ manufacturer: "", model: "", category: "Wireless Mic", owner: "eric", quantity: 1, dayRate: 0, internalValue: 0, serialNumber: "", notes: "" });
+    setForm({ manufacturer: "", model: "", category: "Wireless Mic", owner: "eric", quantity: 1, dayRate: 0, internalValue: 0, serialNumbers: [], notes: "" });
     setOwnerType("eric");
     setOwnerCustom("");
     setEditId(null);
@@ -79,7 +79,7 @@ export default function EquipmentPage() {
     const isPartner = PARTNERS.includes(eq.owner);
     setOwnerType(isPartner ? eq.owner as "eric" | "marko" : "3rd-party");
     setOwnerCustom(isPartner ? "" : eq.owner);
-    setForm({ manufacturer: eq.manufacturer || "", model: eq.model || "", category: eq.category, owner: eq.owner, quantity: eq.quantity, dayRate: eq.dayRate, internalValue: eq.internalValue, serialNumber: eq.serialNumber || "", notes: eq.notes || "" });
+    setForm({ manufacturer: eq.manufacturer || "", model: eq.model || "", category: eq.category, owner: eq.owner, quantity: eq.quantity, dayRate: eq.dayRate, internalValue: eq.internalValue, serialNumbers: eq.serialNumbers || [], notes: eq.notes || "" });
     setEditId(eq.id);
     setShowForm(true);
   }
@@ -338,8 +338,18 @@ export default function EquipmentPage() {
               </div>
               )}
               <div>
-                <label className="block text-text-muted text-[0.65rem] font-semibold mb-2 uppercase tracking-[0.18em]">Quantity</label>
-                <input type="number" min={1} value={form.quantity} onChange={(e) => setForm({ ...form, quantity: parseInt(e.target.value) || 1 })} className="w-full" required />
+                <label className="block text-text-muted text-[0.65rem] font-semibold mb-2 uppercase tracking-[0.18em]">
+                  Quantity {form.serialNumbers.length > 0 && <span className="text-text-muted normal-case tracking-normal">(from serials)</span>}
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  value={form.serialNumbers.length > 0 ? form.serialNumbers.length : form.quantity}
+                  onChange={(e) => setForm({ ...form, quantity: parseInt(e.target.value) || 1 })}
+                  className="w-full"
+                  disabled={form.serialNumbers.length > 0}
+                  required
+                />
               </div>
               <div>
                 <label className="block text-text-muted text-[0.65rem] font-semibold mb-2 uppercase tracking-[0.18em]">Day Rate ($)</label>
@@ -352,6 +362,44 @@ export default function EquipmentPage() {
               <div>
                 <label className="block text-text-muted text-[0.65rem] font-semibold mb-2 uppercase tracking-[0.18em]">Notes</label>
                 <input value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="w-full" placeholder="Optional" />
+              </div>
+              <div className="col-span-2">
+                <label className="block text-text-muted text-[0.65rem] font-semibold mb-2 uppercase tracking-[0.18em]">
+                  Serial Numbers <span className="text-text-muted normal-case tracking-normal">({form.serialNumbers.length})</span>
+                </label>
+                <div className="space-y-2">
+                  {form.serialNumbers.map((sn, i) => (
+                    <div key={i} className="flex gap-2">
+                      <input
+                        value={sn}
+                        onChange={(e) => {
+                          const next = [...form.serialNumbers];
+                          next[i] = e.target.value;
+                          setForm({ ...form, serialNumbers: next });
+                        }}
+                        className="flex-1"
+                        placeholder="e.g., 5502029091"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setForm({ ...form, serialNumbers: form.serialNumbers.filter((_, idx) => idx !== i) })}
+                        className="px-3 text-danger/60 hover:text-danger text-xs font-medium cursor-pointer"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setForm({ ...form, serialNumbers: [...form.serialNumbers, ""] })}
+                    className="text-accent hover:text-accent-hover text-xs font-medium cursor-pointer"
+                  >
+                    + Add Serial Number
+                  </button>
+                </div>
+                {form.serialNumbers.length > 0 && (
+                  <p className="text-text-muted text-[0.65rem] mt-1.5">Quantity is set automatically from the serial count.</p>
+                )}
               </div>
             </div>
 
@@ -404,6 +452,9 @@ export default function EquipmentPage() {
               <tr key={eq.id} className="hover:bg-bg-hover transition-colors cursor-pointer" onClick={() => startEdit(eq)}>
                 <td className="px-5 py-3">
                   <span className="font-medium">{[eq.manufacturer, eq.model].filter(Boolean).join(" ") || eq.name}</span>
+                  {eq.serialNumbers && eq.serialNumbers.length > 0 && (
+                    <span className="text-text-muted text-xs ml-2">{eq.serialNumbers.length} SN</span>
+                  )}
                 </td>
                 <td className="px-5 py-3 text-text-secondary">{eq.category}</td>
                 <td className="px-5 py-3">

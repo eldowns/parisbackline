@@ -12,6 +12,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   const { id } = await params;
   const body = await request.json();
   const name = [body.manufacturer, body.model].filter(Boolean).join(" ") || "Unnamed";
+  const serials: string[] = Array.isArray(body.serialNumbers)
+    ? body.serialNumbers.map((s: string) => String(s).trim()).filter(Boolean)
+    : [];
+  const finalQty = serials.length > 0 ? Math.max(serials.length, body.quantity || 1) : (body.quantity || 1);
   const equipment = await prisma.equipment.update({
     where: { id },
     data: {
@@ -20,10 +24,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       name,
       category: body.category,
       owner: body.owner,
-      quantity: body.quantity || 1,
+      quantity: finalQty,
       dayRate: body.dayRate || 0,
       internalValue: body.internalValue,
-      serialNumber: body.serialNumber,
+      serialNumbers: serials,
       notes: body.notes,
       active: body.active,
     },

@@ -61,6 +61,7 @@ export async function POST(request: NextRequest) {
       },
       dateStart: formatDateUTC(booking.dateStart),
       dateEnd: formatDateUTC(booking.dateEnd),
+      rentalDays,
       billingDays,
       equipment: booking.equipment.map((be) => ({
         name: [be.equipment.manufacturer, be.equipment.model].filter(Boolean).join(" ") || be.equipment.name,

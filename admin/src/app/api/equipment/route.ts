@@ -13,6 +13,39 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const name = [body.manufacturer, body.model].filter(Boolean).join(" ") || "Unnamed";
+    const incomingSerials: string[] = Array.isArray(body.serialNumbers)
+      ? body.serialNumbers.map((s: string) => s.trim()).filter(Boolean)
+      : [];
+
+    // Try to merge into an existing record with same (manufacturer, model, owner)
+    if (body.manufacturer && body.model && body.owner) {
+      const existing = await prisma.equipment.findFirst({
+        where: {
+          manufacturer: { equals: body.manufacturer, mode: "insensitive" },
+          model: { equals: body.model, mode: "insensitive" },
+          owner: { equals: body.owner, mode: "insensitive" },
+          active: true,
+        },
+      });
+      if (existing) {
+        const mergedSerials = Array.from(new Set([...existing.serialNumbers, ...incomingSerials]));
+        const newQty = mergedSerials.length > 0
+          ? Math.max(mergedSerials.length, existing.quantity + (body.quantity || 0))
+          : existing.quantity + (body.quantity || 1);
+        const updated = await prisma.equipment.update({
+          where: { id: existing.id },
+          data: {
+            serialNumbers: mergedSerials,
+            quantity: newQty,
+            dayRate: body.dayRate ?? existing.dayRate,
+            internalValue: body.internalValue ?? existing.internalValue,
+            notes: body.notes ?? existing.notes,
+          },
+        });
+        return NextResponse.json(updated, { status: 200 });
+      }
+    }
+
     const equipment = await prisma.equipment.create({
       data: {
         manufacturer: body.manufacturer || null,
@@ -20,10 +53,10 @@ export async function POST(request: NextRequest) {
         name,
         category: body.category,
         owner: body.owner,
-        quantity: body.quantity || 1,
+        quantity: incomingSerials.length > 0 ? Math.max(incomingSerials.length, body.quantity || 1) : (body.quantity || 1),
         dayRate: body.dayRate || 0,
         internalValue: body.internalValue,
-        serialNumber: body.serialNumber || null,
+        serialNumbers: incomingSerials,
         notes: body.notes || null,
         active: body.active ?? true,
       },

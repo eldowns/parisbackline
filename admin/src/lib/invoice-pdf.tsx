@@ -104,10 +104,9 @@ const s = StyleSheet.create({
     color: textSecondary,
   },
   colItem: { flex: 3 },
-  colQty: { width: 30, textAlign: "center" as const },
-  colDays: { width: 35, textAlign: "center" as const },
-  colPrice: { width: 65, textAlign: "right" as const },
-  colTotal: { width: 70, textAlign: "right" as const },
+  colQty: { width: 40, textAlign: "center" as const },
+  colPrice: { width: 80, textAlign: "right" as const },
+  colTotal: { width: 90, textAlign: "right" as const },
   totalsSection: {
     marginTop: 16,
     alignItems: "flex-end" as const,
@@ -303,15 +302,13 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
           <View style={s.tableHeader}>
             <Text style={[s.tableHeaderText, s.colItem]}>Item</Text>
             <Text style={[s.tableHeaderText, s.colQty]}>Qty</Text>
-            <Text style={[s.tableHeaderText, s.colDays]}>Days</Text>
-            <Text style={[s.tableHeaderText, s.colPrice]}>Rate</Text>
+            <Text style={[s.tableHeaderText, s.colPrice]}>Rate / Day</Text>
             <Text style={[s.tableHeaderText, s.colTotal]}>Total</Text>
           </View>
           {data.equipment.map((item, i) => (
             <View key={i} style={s.tableRow}>
               <Text style={[s.tableCell, s.colItem]}>{item.name}</Text>
               <Text style={[s.tableCellMuted, s.colQty]}>{item.quantity}</Text>
-              <Text style={[s.tableCellMuted, s.colDays]}>{days}</Text>
               <Text style={[s.tableCellMuted, s.colPrice]}>${item.rentalPrice.toFixed(2)}</Text>
               <Text style={[s.tableCell, s.colTotal]}>${(item.rentalPrice * item.quantity * days).toFixed(2)}</Text>
             </View>
@@ -320,8 +317,7 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
             <View key={`sr-${i}`} style={s.tableRow}>
               <Text style={[s.tableCell, s.colItem]}>{sr.description} (via {sr.provider})</Text>
               <Text style={[s.tableCellMuted, s.colQty]}>1</Text>
-              <Text style={[s.tableCellMuted, s.colDays]}></Text>
-              <Text style={[s.tableCellMuted, s.colPrice]}>${sr.cost.toFixed(2)}</Text>
+              <Text style={[s.tableCellMuted, s.colPrice]}></Text>
               <Text style={[s.tableCell, s.colTotal]}>${sr.cost.toFixed(2)}</Text>
             </View>
           ))}
