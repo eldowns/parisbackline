@@ -195,7 +195,7 @@ export default function SendInvoiceModal({ bookingId, clientName, clientEmail, o
                           <tr key={i}>
                             <td className="text-text-secondary py-0.5">{e.name}</td>
                             <td className="text-text-secondary text-center py-0.5">{e.quantity}</td>
-                            <td className="text-text-secondary text-right py-0.5">${e.rentalPrice.toFixed(2)}</td>
+                            <td className="text-text-secondary text-right py-0.5">${(e.rentalPrice * e.quantity).toFixed(2)}</td>
                             <td className="text-text-primary text-right py-0.5">${(e.rentalPrice * e.quantity * days).toFixed(2)}</td>
                           </tr>
                         ))}
@@ -216,10 +216,16 @@ export default function SendInvoiceModal({ bookingId, clientName, clientEmail, o
                         const dv = d.discountValue ?? 0;
                         const disc = d.discountType === "percent" ? subtotal * (dv / 100) : dv;
                         return (
-                          <div className="flex justify-between text-xs">
-                            <span className="text-text-secondary">Discount{d.discountType === "percent" ? ` (${d.discountValue}%)` : ""}</span>
-                            <span className="text-accent">−${disc.toFixed(2)}</span>
-                          </div>
+                          <>
+                            <div className="flex justify-between text-xs">
+                              <span className="text-text-secondary">Subtotal</span>
+                              <span className="text-text-primary">${subtotal.toFixed(2)}</span>
+                            </div>
+                            <div className="flex justify-between text-xs">
+                              <span className="text-text-secondary">Discount{d.discountType === "percent" ? ` (${d.discountValue}%)` : ""}</span>
+                              <span className="text-accent">−${disc.toFixed(2)}</span>
+                            </div>
+                          </>
                         );
                       })()}
                       {d.deliveryFee > 0 && (

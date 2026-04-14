@@ -309,7 +309,7 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
             <View key={i} style={s.tableRow}>
               <Text style={[s.tableCell, s.colItem]}>{item.name}</Text>
               <Text style={[s.tableCellMuted, s.colQty]}>{item.quantity}</Text>
-              <Text style={[s.tableCellMuted, s.colPrice]}>${item.rentalPrice.toFixed(2)}</Text>
+              <Text style={[s.tableCellMuted, s.colPrice]}>${(item.rentalPrice * item.quantity).toFixed(2)}</Text>
               <Text style={[s.tableCell, s.colTotal]}>${(item.rentalPrice * item.quantity * days).toFixed(2)}</Text>
             </View>
           ))}
@@ -336,12 +336,18 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
             </View>
           )}
           {discountAmount > 0 && (
-            <View style={s.totalRow}>
-              <Text style={s.totalLabel}>
-                Discount{data.discountType === "percent" ? ` (${data.discountValue}%)` : ""}
-              </Text>
-              <Text style={s.totalValue}>−${discountAmount.toFixed(2)}</Text>
-            </View>
+            <>
+              <View style={s.totalRow}>
+                <Text style={s.totalLabel}>Subtotal</Text>
+                <Text style={s.totalValue}>${subtotal.toFixed(2)}</Text>
+              </View>
+              <View style={s.totalRow}>
+                <Text style={s.totalLabel}>
+                  Discount{data.discountType === "percent" ? ` (${data.discountValue}%)` : ""}
+                </Text>
+                <Text style={s.totalValue}>−${discountAmount.toFixed(2)}</Text>
+              </View>
+            </>
           )}
           {data.deliveryFee > 0 && (
             <View style={s.totalRow}>
