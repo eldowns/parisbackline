@@ -27,7 +27,8 @@ interface BookingData {
     id: string;
     quantity: number;
     rentalPrice: number;
-    equipment: { name: string; manufacturer: string | null; model: string | null; owner: string; category: string };
+    customName: string | null;
+    equipment: { name: string; manufacturer: string | null; model: string | null; owner: string; category: string } | null;
   }[];
   subRentals: { provider: string; description: string; cost: number }[];
 }
@@ -154,15 +155,19 @@ function BookingRow({ b }: { b: BookingData }) {
                 <p className="text-text-muted text-[0.65rem] font-semibold uppercase tracking-[0.18em] mb-2">Equipment</p>
                 <div className="space-y-1">
                   {b.equipment.map((be) => {
-                    const name = [be.equipment.manufacturer, be.equipment.model].filter(Boolean).join(" ") || be.equipment.name;
+                    const name = be.equipment
+                      ? [be.equipment.manufacturer, be.equipment.model].filter(Boolean).join(" ") || be.equipment.name
+                      : (be.customName || "Custom Item");
                     return (
                       <div key={be.id} className="flex justify-between text-text-secondary">
                         <span>
                           {name}
                           {be.quantity > 1 && <span className="text-text-muted"> x{be.quantity}</span>}
-                          <span className={`ml-1 text-xs ${be.equipment.owner === "eric" ? "text-eric" : "text-marko"}`}>
-                            ({capitalize(be.equipment.owner)})
-                          </span>
+                          {be.equipment && (
+                            <span className={`ml-1 text-xs ${be.equipment.owner === "eric" ? "text-eric" : "text-marko"}`}>
+                              ({capitalize(be.equipment.owner)})
+                            </span>
+                          )}
                         </span>
                         <span className="font-medium text-text-primary">${(be.rentalPrice * be.quantity).toFixed(2)}</span>
                       </div>

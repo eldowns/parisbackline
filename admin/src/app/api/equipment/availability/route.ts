@@ -39,6 +39,7 @@ export async function GET(request: NextRequest) {
   const conflicts: Record<string, { equipmentId: string; totalBooked: number; bookings: { client: string; dateStart: string; dateEnd: string }[] }> = {};
 
   for (const be of bookedEquipment) {
+    if (!be.equipmentId) continue;
     if (!conflicts[be.equipmentId]) {
       conflicts[be.equipmentId] = { equipmentId: be.equipmentId, totalBooked: 0, bookings: [] };
     }

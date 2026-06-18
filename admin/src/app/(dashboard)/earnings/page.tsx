@@ -34,10 +34,12 @@ export default async function EarningsPage() {
         commPartner: b.commPartner,
         invoicePartner: b.invoicePartner,
         accountPartner: b.accountPartner,
-        gearItems: b.equipment.map((be) => ({
-          owner: be.equipment.owner,
-          internalValue: be.equipment.internalValue * be.quantity,
-        })),
+        gearItems: b.equipment
+          .filter((be) => be.equipment)
+          .map((be) => ({
+            owner: be.equipment!.owner,
+            revenue: be.rentalPrice * be.quantity,
+          })),
         subRentals: b.subRentals.map((sr) => ({ provider: sr.provider, cost: sr.cost })),
       });
 
@@ -74,10 +76,12 @@ export default async function EarningsPage() {
       commPartner: b.commPartner,
       invoicePartner: b.invoicePartner,
       accountPartner: b.accountPartner,
-      gearItems: b.equipment.map((be) => ({
-        owner: be.equipment.owner,
-        internalValue: be.equipment.internalValue * be.quantity,
-      })),
+      gearItems: b.equipment
+        .filter((be) => be.equipment)
+        .map((be) => ({
+          owner: be.equipment!.owner,
+          revenue: be.rentalPrice * be.quantity,
+        })),
       subRentals: b.subRentals.map((sr) => ({ provider: sr.provider, cost: sr.cost })),
     });
     return {

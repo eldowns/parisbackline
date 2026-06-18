@@ -64,7 +64,9 @@ export async function POST(request: NextRequest) {
       rentalDays,
       billingDays,
       equipment: booking.equipment.map((be) => ({
-        name: [be.equipment.manufacturer, be.equipment.model].filter(Boolean).join(" ") || be.equipment.name,
+        name: be.equipment
+          ? [be.equipment.manufacturer, be.equipment.model].filter(Boolean).join(" ") || be.equipment.name
+          : (be.customName || "Custom Item"),
         quantity: be.quantity,
         rentalPrice: be.rentalPrice,
       })),

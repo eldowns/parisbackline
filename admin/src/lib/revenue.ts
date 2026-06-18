@@ -1,6 +1,6 @@
 export interface GearItem {
   owner: string;       // "eric", "marko", or third-party name
-  internalValue: number;
+  revenue: number;     // rental revenue this line generated (rate × qty)
 }
 
 export interface SubRentalItem {
@@ -57,13 +57,13 @@ export function calculatePayout(input: BookingInput): PayoutBreakdown {
   const gearSide = netRevenue * 0.5;
   const adminSide = netRevenue * 0.5;
 
-  // Step 4: Calculate gear proportions
-  const totalGearValue = input.gearItems.reduce((sum, g) => sum + g.internalValue, 0);
+  // Step 4: Calculate gear proportions by rental revenue each line contributed
+  const totalGearRevenue = input.gearItems.reduce((sum, g) => sum + g.revenue, 0);
 
   const gearPayouts: Record<string, number> = {};
-  if (totalGearValue > 0) {
+  if (totalGearRevenue > 0) {
     for (const item of input.gearItems) {
-      const share = (item.internalValue / totalGearValue) * gearSide;
+      const share = (item.revenue / totalGearRevenue) * gearSide;
       gearPayouts[item.owner] = (gearPayouts[item.owner] || 0) + share;
     }
   }

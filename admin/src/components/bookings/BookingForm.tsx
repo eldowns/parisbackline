@@ -50,7 +50,7 @@ interface BookingData {
   accountPartner: string;
   notes: string;
   status: string;
-  equipment: { equipmentId: string; quantity: number; rentalPrice: number }[];
+  equipment: { equipmentId: string | null; customName?: string; quantity: number; rentalPrice: number }[];
   subRentals: SubRentalEntry[];
 }
 
@@ -108,15 +108,17 @@ export default function BookingForm({
     update({ equipment: [...form.equipment, { equipmentId: eqId, quantity: 1, rentalPrice: rate }] });
   }
 
-  function removeEquipment(eqId: string) {
-    update({ equipment: form.equipment.filter((e) => e.equipmentId !== eqId) });
+  function addCustomItem() {
+    update({ equipment: [...form.equipment, { equipmentId: null, customName: "", quantity: 1, rentalPrice: 0 }] });
   }
 
-  function updateEquipmentField(eqId: string, fields: Partial<{ quantity: number; rentalPrice: number }>) {
+  function removeEquipment(idx: number) {
+    update({ equipment: form.equipment.filter((_, i) => i !== idx) });
+  }
+
+  function updateEquipmentField(idx: number, fields: Partial<{ customName: string; quantity: number; rentalPrice: number }>) {
     update({
-      equipment: form.equipment.map((e) =>
-        e.equipmentId === eqId ? { ...e, ...fields } : e
-      ),
+      equipment: form.equipment.map((e, i) => (i === idx ? { ...e, ...fields } : e)),
     });
   }
 
@@ -184,9 +186,13 @@ export default function BookingForm({
 
   // Payout
   const payout = useMemo(() => {
-    const selectedEquip = form.equipment
-      .map((fe) => equipment.find((e) => e.id === fe.equipmentId))
-      .filter(Boolean) as EquipmentItem[];
+    const gearItems = form.equipment
+      .map((fe) => {
+        const e = equipment.find((eq) => eq.id === fe.equipmentId);
+        if (!e) return null; // custom items have no owner — excluded from gear split
+        return { owner: e.owner, revenue: fe.rentalPrice * fe.quantity };
+      })
+      .filter(Boolean) as { owner: string; revenue: number }[];
 
     return calculatePayout({
       rentalFee: effectiveRentalFee,
@@ -197,10 +203,7 @@ export default function BookingForm({
       commPartner: form.commPartner,
       invoicePartner: form.invoicePartner,
       accountPartner: form.accountPartner,
-      gearItems: selectedEquip.map((e) => ({
-        owner: e.owner,
-        internalValue: e.internalValue * (form.equipment.find((fe) => fe.equipmentId === e.id)?.quantity || 1),
-      })),
+      gearItems,
       subRentals: form.subRentals.filter((s) => s.provider && s.cost > 0),
     });
   }, [form, equipment, equipmentTotal, effectiveRentalFee, calculatedReferralFee]);
@@ -360,23 +363,38 @@ export default function BookingForm({
           {form.equipment.length > 0 && (
             <div className="space-y-2 mb-4">
               {form.equipment.map((fe, idx) => {
-                const eq = equipment.find((e) => e.id === fe.equipmentId);
-                if (!eq) return null;
-                const displayName = [eq.manufacturer, eq.model].filter(Boolean).join(" ") || eq.name;
+                const isCustom = !fe.equipmentId;
+                const eq = isCustom ? null : equipment.find((e) => e.id === fe.equipmentId);
+                if (!isCustom && !eq) return null;
+                const displayName = eq ? [eq.manufacturer, eq.model].filter(Boolean).join(" ") || eq.name : "";
                 return (
-                  <div key={`${fe.equipmentId}-${idx}`} className="flex items-center gap-3 p-3 bg-accent/5" style={{ borderRadius: "1px" }}>
+                  <div key={`${fe.equipmentId ?? "custom"}-${idx}`} className="flex items-center gap-3 p-3 bg-accent/5" style={{ borderRadius: "1px" }}>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{displayName}</p>
-                      <p className="text-xs text-text-muted">
-                        {eq.category} &middot;{" "}
-                        <span className={eq.owner === "eric" ? "text-eric" : "text-marko"}>
-                          {eq.owner.charAt(0).toUpperCase() + eq.owner.slice(1)}
-                        </span>
-                      </p>
-                      {conflicts[fe.equipmentId] && (
-                        <p className="text-xs text-warning mt-0.5">
-                          ⚠ Booked by {conflicts[fe.equipmentId].bookings.map((c) => c.client).join(", ")} for these dates
-                        </p>
+                      {isCustom ? (
+                        <>
+                          <label className="block text-text-muted text-[0.6rem] uppercase tracking-wider mb-0.5">Custom Item</label>
+                          <input
+                            value={fe.customName || ""}
+                            onChange={(e) => updateEquipmentField(idx, { customName: e.target.value })}
+                            className="w-full text-sm"
+                            placeholder="Description (e.g. Custom riser package)"
+                          />
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-sm font-medium truncate">{displayName}</p>
+                          <p className="text-xs text-text-muted">
+                            {eq!.category} &middot;{" "}
+                            <span className={eq!.owner === "eric" ? "text-eric" : "text-marko"}>
+                              {eq!.owner.charAt(0).toUpperCase() + eq!.owner.slice(1)}
+                            </span>
+                          </p>
+                          {fe.equipmentId && conflicts[fe.equipmentId] && (
+                            <p className="text-xs text-warning mt-0.5">
+                              ⚠ Booked by {conflicts[fe.equipmentId].bookings.map((c) => c.client).join(", ")} for these dates
+                            </p>
+                          )}
+                        </>
                       )}
                     </div>
                     <div className="flex items-center gap-2">
@@ -386,7 +404,7 @@ export default function BookingForm({
                           type="number"
                           min={1}
                           value={fe.quantity}
-                          onChange={(e) => updateEquipmentField(fe.equipmentId, { quantity: parseInt(e.target.value) || 1 })}
+                          onChange={(e) => updateEquipmentField(idx, { quantity: parseInt(e.target.value) || 1 })}
                           className="w-14 text-center text-sm"
                         />
                       </div>
@@ -396,14 +414,14 @@ export default function BookingForm({
                           type="number"
                           step="0.01"
                           value={fe.rentalPrice || ""}
-                          onChange={(e) => updateEquipmentField(fe.equipmentId, { rentalPrice: parseFloat(e.target.value) || 0 })}
+                          onChange={(e) => updateEquipmentField(idx, { rentalPrice: parseFloat(e.target.value) || 0 })}
                           className="w-24 text-sm"
                           placeholder="0.00"
                         />
                       </div>
                       <button
                         type="button"
-                        onClick={() => removeEquipment(fe.equipmentId)}
+                        onClick={() => removeEquipment(idx)}
                         className="text-danger/60 hover:text-danger text-xs mt-4 cursor-pointer"
                       >
                         Remove
@@ -415,20 +433,30 @@ export default function BookingForm({
             </div>
           )}
 
-          <select
-            onChange={(e) => { if (e.target.value) { addEquipment(e.target.value); e.target.value = ""; } }}
-            className="w-full"
-            defaultValue=""
-          >
-            <option value="">+ Add equipment from inventory...</option>
-            {equipment
-              .filter((eq) => !form.equipment.find((fe) => fe.equipmentId === eq.id))
-              .map((eq) => (
-                <option key={eq.id} value={eq.id}>
-                  {[eq.manufacturer, eq.model].filter(Boolean).join(" ") || eq.name} — {eq.category} ({eq.owner})
-                </option>
-              ))}
-          </select>
+          <div className="flex gap-2">
+            <select
+              onChange={(e) => { if (e.target.value) { addEquipment(e.target.value); e.target.value = ""; } }}
+              className="flex-1"
+              defaultValue=""
+            >
+              <option value="">+ Add equipment from inventory...</option>
+              {equipment
+                .filter((eq) => !form.equipment.find((fe) => fe.equipmentId === eq.id))
+                .map((eq) => (
+                  <option key={eq.id} value={eq.id}>
+                    {[eq.manufacturer, eq.model].filter(Boolean).join(" ") || eq.name} — {eq.category} ({eq.owner})
+                  </option>
+                ))}
+            </select>
+            <button
+              type="button"
+              onClick={addCustomItem}
+              className="whitespace-nowrap px-3 bg-bg-tertiary border border-border text-accent hover:text-accent-hover text-sm cursor-pointer"
+              style={{ borderRadius: "1px" }}
+            >
+              + Add Custom Item
+            </button>
+          </div>
         </div>
 
         {/* Sub-Rentals */}

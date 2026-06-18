@@ -46,6 +46,7 @@ export default async function NewBookingPage({
         status: "confirmed",
         equipment: sourceBooking.equipment.map((be) => ({
           equipmentId: be.equipmentId,
+          customName: be.customName ?? undefined,
           quantity: be.quantity,
           rentalPrice: be.rentalPrice,
         })),

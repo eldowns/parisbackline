@@ -27,10 +27,12 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
     commPartner: booking.commPartner,
     invoicePartner: booking.invoicePartner,
     accountPartner: booking.accountPartner,
-    gearItems: booking.equipment.map((be) => ({
-      owner: be.equipment.owner,
-      internalValue: be.equipment.internalValue * be.quantity,
-    })),
+    gearItems: booking.equipment
+      .filter((be) => be.equipment)
+      .map((be) => ({
+        owner: be.equipment!.owner,
+        revenue: be.rentalPrice * be.quantity,
+      })),
     subRentals: booking.subRentals.map((sr) => ({
       provider: sr.provider,
       cost: sr.cost,
@@ -149,17 +151,25 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
                 {booking.equipment.map((be) => (
                   <div key={be.id} className="flex items-center justify-between py-2.5">
                     <div>
-                      <p className="text-sm font-medium">{be.equipment.name}</p>
+                      <p className="text-sm font-medium">{be.equipment ? be.equipment.name : (be.customName || "Custom Item")}</p>
                       <p className="text-xs text-text-muted">
-                        {be.equipment.category} &middot;{" "}
-                        <span className={be.equipment.owner === "eric" ? "text-eric" : be.equipment.owner === "marko" ? "text-marko" : ""}>
-                          {capitalize(be.equipment.owner)}
-                        </span>
+                        {be.equipment ? (
+                          <>
+                            {be.equipment.category} &middot;{" "}
+                            <span className={be.equipment.owner === "eric" ? "text-eric" : be.equipment.owner === "marko" ? "text-marko" : ""}>
+                              {capitalize(be.equipment.owner)}
+                            </span>
+                          </>
+                        ) : (
+                          "Custom item"
+                        )}
                       </p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-semibold">x{be.quantity}</p>
-                      <p className="text-xs text-text-muted">${be.equipment.internalValue}/unit</p>
+                      <p className="text-xs text-text-muted">
+                        {be.equipment ? `$${be.equipment.internalValue}/unit` : `$${be.rentalPrice}/unit`}
+                      </p>
                     </div>
                   </div>
                 ))}
