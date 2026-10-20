@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { Resend } from "resend";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { InvoicePDF } from "@/lib/invoice-pdf";
+import { invoiceTotals } from "@/lib/invoice-totals";
+import { billingDays as billingDaysFor } from "@/lib/booking-payout";
 import React from "react";
 
 function getResend() {
@@ -42,13 +44,11 @@ export async function POST(request: NextRequest) {
       day: "numeric",
     });
 
-    // Calculate billing days using same logic as BookingForm
     const start = new Date(booking.dateStart);
     const end = new Date(booking.dateEnd);
     const rentalDays = Math.max(Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1, 0);
-    const weeks = Math.floor(rentalDays / 7);
-    const remaining = rentalDays % 7;
-    const billingDays = rentalDays === 0 ? 0 : weeks * 4 + Math.min(remaining, 4);
+    const billingDays = billingDaysFor(booking.dateStart, booking.dateEnd);
+    const { items, rows, grandTotal } = invoiceTotals(booking);
 
     const invoiceData = {
       invoiceNumber,
@@ -63,34 +63,11 @@ export async function POST(request: NextRequest) {
       dateEnd: formatDateUTC(booking.dateEnd),
       rentalDays,
       billingDays,
-      equipment: booking.equipment.map((be) => ({
-        name: be.equipment
-          ? [be.equipment.manufacturer, be.equipment.model].filter(Boolean).join(" ") || be.equipment.name
-          : (be.customName || "Custom Item"),
-        quantity: be.quantity,
-        rentalPrice: be.rentalPrice,
-      })),
-      subRentals: booking.subRentals.map((sr) => ({
-        provider: sr.provider,
-        description: sr.description,
-        cost: sr.cost,
-      })),
-      deliveryFee: booking.deliveryFee,
-      discountType: booking.discountType as "amount" | "percent",
-      discountValue: booking.discountValue,
+      items,
+      rows,
+      grandTotal,
       notes: booking.notes,
     };
-
-    const equipmentTotal = invoiceData.equipment.reduce((s, e) => s + e.rentalPrice * e.quantity * billingDays, 0);
-    const subRentalTotal = invoiceData.subRentals.reduce((s, sr) => s + sr.cost, 0);
-    const subtotal = equipmentTotal + subRentalTotal;
-    const discountAmount =
-      booking.discountValue > 0
-        ? booking.discountType === "percent"
-          ? subtotal * (booking.discountValue / 100)
-          : booking.discountValue
-        : 0;
-    const grandTotal = subtotal - discountAmount + invoiceData.deliveryFee;
 
     // Generate PDF
     const pdfBuffer = await renderToBuffer(

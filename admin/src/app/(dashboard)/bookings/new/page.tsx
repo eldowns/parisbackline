@@ -42,6 +42,11 @@ export default async function NewBookingPage({
         commPartner: sourceBooking.commPartner,
         invoicePartner: sourceBooking.invoicePartner,
         accountPartner: sourceBooking.accountPartner,
+        // A duplicate is a new booking, so it always uses the current payout structure
+        payoutVersion: 2,
+        adminBy: sourceBooking.payoutVersion >= 2 ? sourceBooking.adminBy : "both",
+        dropoffBy: sourceBooking.dropoffBy || "",
+        pickupBy: sourceBooking.pickupBy || "",
         notes: sourceBooking.notes || "",
         status: "confirmed",
         equipment: sourceBooking.equipment.map((be) => ({
@@ -54,6 +59,7 @@ export default async function NewBookingPage({
           provider: sr.provider,
           description: sr.description,
           cost: sr.cost,
+          clientPrice: sr.clientPrice ?? sr.cost,
         })),
       }
     : undefined;

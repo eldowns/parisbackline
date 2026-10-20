@@ -3,6 +3,8 @@
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { calculatePayout } from "@/lib/revenue";
+import { calculateSplit, MINIMUM_ORDER } from "@/lib/split";
+import { viewFromLegacy, viewFromSplit } from "@/lib/booking-payout";
 import PayoutBreakdown from "./PayoutBreakdown";
 import SendInvoiceButton from "./SendInvoiceButton";
 
@@ -28,6 +30,7 @@ interface SubRentalEntry {
   provider: string;
   description: string;
   cost: number;
+  clientPrice?: number;
 }
 
 interface BookingData {
@@ -48,6 +51,10 @@ interface BookingData {
   commPartner: string;
   invoicePartner: string;
   accountPartner: string;
+  payoutVersion?: number;
+  adminBy: string;
+  dropoffBy: string;
+  pickupBy: string;
   notes: string;
   status: string;
   equipment: { equipmentId: string | null; customName?: string; quantity: number; rentalPrice: number }[];
@@ -65,6 +72,8 @@ export default function BookingForm({
 }) {
   const router = useRouter();
   const isEdit = !!initialData?.id;
+  // Bookings made before Jutes (Jan 2027) keep the old 50/50 split
+  const isV2 = (initialData?.payoutVersion ?? 2) >= 2;
 
   const [form, setForm] = useState<BookingData>(
     initialData || {
@@ -84,6 +93,10 @@ export default function BookingForm({
       commPartner: "eric",
       invoicePartner: "eric",
       accountPartner: "eric",
+      payoutVersion: 2,
+      adminBy: "both",
+      dropoffBy: "",
+      pickupBy: "",
       notes: "",
       status: "confirmed",
       equipment: [],
@@ -158,7 +171,7 @@ export default function BookingForm({
 
   // Sub-rentals
   function addSubRental() {
-    update({ subRentals: [...form.subRentals, { provider: "", description: "", cost: 0 }] });
+    update({ subRentals: [...form.subRentals, { provider: "", description: "", cost: 0, clientPrice: 0 }] });
   }
 
   function updateSubRental(idx: number, fields: Partial<SubRentalEntry>) {
@@ -184,8 +197,29 @@ export default function BookingForm({
     ? effectiveRentalFee * (form.referralPercent / 100)
     : 0;
 
-  // Payout
-  const payout = useMemo(() => {
+  // New structure: minimum order, capped discount, waterfall, delivery legs
+  const split = useMemo(
+    () =>
+      calculateSplit({
+        items: form.equipment.map((fe) => ({
+          owner: equipment.find((eq) => eq.id === fe.equipmentId)?.owner ?? null,
+          amount: fe.rentalPrice * fe.quantity * billingDays,
+        })),
+        subRentals: form.subRentals
+          .filter((s) => s.provider)
+          .map((s) => ({ provider: s.provider, cost: s.cost, clientPrice: s.clientPrice ?? s.cost })),
+        discountType: form.discountType,
+        discountValue: form.discountValue,
+        referralName: form.referralName,
+        adminBy: form.adminBy,
+        dropoffBy: form.dropoffBy,
+        pickupBy: form.pickupBy,
+      }),
+    [form, equipment, billingDays]
+  );
+
+  // Payout (old structure)
+  const legacyPayout = useMemo(() => {
     const gearItems = form.equipment
       .map((fe) => {
         const e = equipment.find((eq) => eq.id === fe.equipmentId);
@@ -206,7 +240,11 @@ export default function BookingForm({
       gearItems,
       subRentals: form.subRentals.filter((s) => s.provider && s.cost > 0),
     });
-  }, [form, equipment, equipmentTotal, effectiveRentalFee, calculatedReferralFee]);
+  }, [form, equipment, effectiveRentalFee, calculatedReferralFee]);
+
+  const payoutView = isV2
+    ? viewFromSplit(split)
+    : viewFromLegacy(legacyPayout, effectiveRentalFee, form.deliveryFee);
 
   async function handleCreateClient() {
     const res = await fetch("/api/clients", {
@@ -237,8 +275,20 @@ export default function BookingForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
-          rentalFee: effectiveRentalFee,
-          referralFee: calculatedReferralFee,
+          ...(isV2
+            ? {
+                payoutVersion: 2,
+                rentalFee: split.rentalTotal,
+                minimumAdjustment: split.minimumAdjustment,
+                deliveryFee: split.deliveryTotal,
+                deliveryBy: null,
+                referralFee: split.referralFee,
+                referralPercent: 10,
+              }
+            : {
+                rentalFee: effectiveRentalFee,
+                referralFee: calculatedReferralFee,
+              }),
           discountType: form.discountType,
           discountValue: form.discountValue,
           ...(statusOverride ? { status: statusOverride } : {}),
@@ -472,7 +522,7 @@ export default function BookingForm({
             </button>
           </div>
           {form.subRentals.map((sr, idx) => (
-            <div key={idx} className="grid grid-cols-4 gap-3 items-end">
+            <div key={idx} className={`grid ${isV2 ? "grid-cols-5" : "grid-cols-4"} gap-3 items-end`}>
               <div>
                 <label className={labelClass}>Provider</label>
                 <input value={sr.provider} onChange={(e) => updateSubRental(idx, { provider: e.target.value })} className="w-full" placeholder="e.g., Dario" />
@@ -482,9 +532,15 @@ export default function BookingForm({
                 <input value={sr.description} onChange={(e) => updateSubRental(idx, { description: e.target.value })} className="w-full" placeholder="What gear?" />
               </div>
               <div>
-                <label className={labelClass}>Cost ($)</label>
+                <label className={labelClass}>{isV2 ? "Our Cost ($)" : "Cost ($)"}</label>
                 <input type="number" step="0.01" value={sr.cost || ""} onChange={(e) => updateSubRental(idx, { cost: parseFloat(e.target.value) || 0 })} className="w-full" />
               </div>
+              {isV2 && (
+                <div>
+                  <label className={labelClass}>Client Price ($)</label>
+                  <input type="number" step="0.01" value={sr.clientPrice || ""} onChange={(e) => updateSubRental(idx, { clientPrice: parseFloat(e.target.value) || 0 })} className="w-full" />
+                </div>
+              )}
               <button type="button" onClick={() => removeSubRental(idx)} className="text-danger hover:text-danger/70 text-xs font-medium pb-2 cursor-pointer">
                 Remove
               </button>
@@ -499,9 +555,9 @@ export default function BookingForm({
         <div className={sectionClass}>
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-semibold text-text-primary">Discount</h3>
-            {discountAmount > 0 && (
+            {(isV2 ? split.discount : discountAmount) > 0 && (
               <p className="text-sm font-semibold text-accent">
-                −${discountAmount.toFixed(2)}
+                −${(isV2 ? split.discount : discountAmount).toFixed(2)}
               </p>
             )}
           </div>
@@ -533,20 +589,64 @@ export default function BookingForm({
               />
             </div>
             <div>
-              <label className={labelClass}>Rental After Discount</label>
-              <p className="text-sm font-semibold text-text-primary py-2">
-                ${effectiveRentalFee.toFixed(2)}
-                {discountAmount > 0 && (
-                  <span className="text-text-muted font-normal ml-1">
-                    (from ${rentalSubtotal.toFixed(2)})
-                  </span>
-                )}
-              </p>
+              <label className={labelClass}>{isV2 ? "Rental Total" : "Rental After Discount"}</label>
+              {isV2 ? (
+                <p className="text-sm font-semibold text-text-primary py-2">
+                  ${split.rentalTotal.toFixed(2)}
+                  {(split.discount > 0 || split.minimumAdjustment > 0) && (
+                    <span className="text-text-muted font-normal ml-1">
+                      (from ${split.rentalSubtotal.toFixed(2)})
+                    </span>
+                  )}
+                </p>
+              ) : (
+                <p className="text-sm font-semibold text-text-primary py-2">
+                  ${effectiveRentalFee.toFixed(2)}
+                  {discountAmount > 0 && (
+                    <span className="text-text-muted font-normal ml-1">
+                      (from ${rentalSubtotal.toFixed(2)})
+                    </span>
+                  )}
+                </p>
+              )}
             </div>
           </div>
+          {isV2 && split.discountCapped && (
+            <p className="text-xs text-warning">
+              Discount limited to ${split.discount.toFixed(2)} (minimum order ${MINIMUM_ORDER})
+            </p>
+          )}
+          {isV2 && split.minimumAdjustment > 0 && (
+            <p className="text-xs text-text-muted">
+              Minimum order adjustment: +${split.minimumAdjustment.toFixed(2)} (shown on the invoice)
+            </p>
+          )}
         </div>
 
         {/* Delivery */}
+        {isV2 ? (
+          <div className={sectionClass}>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-semibold text-text-primary">Delivery</h3>
+              <p className="text-sm font-semibold text-text-primary">${split.deliveryTotal.toFixed(2)}</p>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                { key: "dropoffBy" as const, label: "Drop-off ($50) by" },
+                { key: "pickupBy" as const, label: "Pick-up ($50) by" },
+              ].map(({ key, label }) => (
+                <div key={key}>
+                  <label className={labelClass}>{label}</label>
+                  <select value={form[key]} onChange={(e) => update({ [key]: e.target.value })} className="w-full">
+                    <option value="">Client handles it</option>
+                    <option value="eric">Eric</option>
+                    <option value="marko">Marko</option>
+                  </select>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
         <div className={sectionClass}>
           <h3 className="text-sm font-semibold text-text-primary mb-2">Delivery</h3>
           <div className="grid grid-cols-2 gap-4">
@@ -571,20 +671,22 @@ export default function BookingForm({
             </div>
           </div>
         </div>
+        )}
 
         {/* Referral */}
         <div className={sectionClass}>
           <h3 className="text-sm font-semibold text-text-primary mb-2">Referral</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className={`grid grid-cols-1 ${isV2 ? "md:grid-cols-2" : "md:grid-cols-3"} gap-4`}>
             <div>
               <label className={labelClass}>Referrer</label>
               <input
                 value={form.referralName}
                 onChange={(e) => update({ referralName: e.target.value })}
                 className="w-full"
-                placeholder="Who referred?"
+                placeholder={isV2 ? "Outside referrer (not Eric or Marko)" : "Who referred?"}
               />
             </div>
+            {!isV2 && (
             <div>
               <label className={labelClass}>Referral %</label>
               <input
@@ -597,11 +699,12 @@ export default function BookingForm({
                 className="w-full"
               />
             </div>
+            )}
             <div>
               <label className={labelClass}>Referral Fee</label>
               <p className="text-sm font-semibold text-text-primary py-2">
-                ${calculatedReferralFee.toFixed(2)}
-                {form.referralName && (
+                ${(isV2 ? split.referralFee : calculatedReferralFee).toFixed(2)}
+                {!isV2 && form.referralName && (
                   <span className="text-text-muted font-normal ml-1">
                     ({form.referralPercent}% of ${effectiveRentalFee.toFixed(2)})
                   </span>
@@ -612,6 +715,24 @@ export default function BookingForm({
         </div>
 
         {/* Admin */}
+        {isV2 ? (
+          <div className={sectionClass}>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-semibold text-text-primary">Admin</h3>
+              <p className="text-sm font-semibold text-text-primary">${split.adminSide.toFixed(2)}</p>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div>
+                <label className={labelClass}>Admin done by</label>
+                <select value={form.adminBy} onChange={(e) => update({ adminBy: e.target.value })} className="w-full">
+                  <option value="both">Both (50/50)</option>
+                  <option value="eric">Eric</option>
+                  <option value="marko">Marko</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        ) : (
         <div className={sectionClass}>
           <h3 className="text-sm font-semibold text-text-primary mb-2">Admin (25% each)</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -631,6 +752,7 @@ export default function BookingForm({
             ))}
           </div>
         </div>
+        )}
 
         {/* Notes */}
         <div className={sectionClass}>
@@ -677,7 +799,7 @@ export default function BookingForm({
       {/* Right sidebar — live payout breakdown */}
       <div className="lg:col-span-1">
         <div className="sticky top-8">
-          <PayoutBreakdown payout={payout} rentalFee={effectiveRentalFee} deliveryFee={form.deliveryFee} />
+          <PayoutBreakdown view={payoutView} />
           {isEdit && initialData?.id && (
             <SendInvoiceButton
               bookingId={initialData.id}

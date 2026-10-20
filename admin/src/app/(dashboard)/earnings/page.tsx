@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { format, startOfMonth, startOfYear } from "date-fns";
-import { calculatePayout } from "@/lib/revenue";
+import { payoutViewForBooking } from "@/lib/booking-payout";
 import CountUp from "@/components/ui/CountUp";
 
 export const dynamic = "force-dynamic";
@@ -21,36 +21,18 @@ export default async function EarningsPage() {
   });
 
   function computeEarnings(bookings: typeof allBookings) {
-    let eric = { gear: 0, admin: 0, delivery: 0, total: 0 };
-    let marko = { gear: 0, admin: 0, delivery: 0, total: 0 };
+    const eric = { owners: 0, gear: 0, admin: 0, delivery: 0, total: 0 };
+    const marko = { owners: 0, gear: 0, admin: 0, delivery: 0, total: 0 };
 
     for (const b of bookings) {
-      const payout = calculatePayout({
-        rentalFee: b.rentalFee,
-        deliveryFee: b.deliveryFee,
-        deliveryBy: b.deliveryBy,
-        referralFee: b.referralFee,
-        leadPartner: b.leadPartner,
-        commPartner: b.commPartner,
-        invoicePartner: b.invoicePartner,
-        accountPartner: b.accountPartner,
-        gearItems: b.equipment
-          .filter((be) => be.equipment)
-          .map((be) => ({
-            owner: be.equipment!.owner,
-            revenue: be.rentalPrice * be.quantity,
-          })),
-        subRentals: b.subRentals.map((sr) => ({ provider: sr.provider, cost: sr.cost })),
-      });
-
-      eric.gear += payout.eric.gear;
-      eric.admin += payout.eric.admin;
-      eric.delivery += payout.eric.delivery;
-      eric.total += payout.eric.total;
-      marko.gear += payout.marko.gear;
-      marko.admin += payout.marko.admin;
-      marko.delivery += payout.marko.delivery;
-      marko.total += payout.marko.total;
+      const { partners } = payoutViewForBooking(b);
+      for (const [acc, p] of [[eric, partners.eric], [marko, partners.marko]] as const) {
+        acc.owners += p.owners;
+        acc.gear += p.gear;
+        acc.admin += p.admin;
+        acc.delivery += p.delivery;
+        acc.total += p.total;
+      }
     }
 
     return { eric, marko };
@@ -67,28 +49,12 @@ export default async function EarningsPage() {
 
   // Recent booking payouts (paid only)
   const recentPayouts = allBookings.slice(0, 8).map((b) => {
-    const payout = calculatePayout({
-      rentalFee: b.rentalFee,
-      deliveryFee: b.deliveryFee,
-      deliveryBy: b.deliveryBy,
-      referralFee: b.referralFee,
-      leadPartner: b.leadPartner,
-      commPartner: b.commPartner,
-      invoicePartner: b.invoicePartner,
-      accountPartner: b.accountPartner,
-      gearItems: b.equipment
-        .filter((be) => be.equipment)
-        .map((be) => ({
-          owner: be.equipment!.owner,
-          revenue: be.rentalPrice * be.quantity,
-        })),
-      subRentals: b.subRentals.map((sr) => ({ provider: sr.provider, cost: sr.cost })),
-    });
+    const { partners } = payoutViewForBooking(b);
     return {
       client: b.client.company || b.client.name,
       date: b.dateStart,
-      eric: payout.eric.total,
-      marko: payout.marko.total,
+      eric: partners.eric.total,
+      marko: partners.marko.total,
       total: b.rentalFee + b.deliveryFee,
     };
   });
@@ -102,9 +68,9 @@ export default async function EarningsPage() {
     name: string;
     color: string;
     dotColor: string;
-    allTime: { gear: number; admin: number; delivery: number; total: number };
-    ytd: { gear: number; admin: number; delivery: number; total: number };
-    mtd: { gear: number; admin: number; delivery: number; total: number };
+    allTime: { owners: number; gear: number; admin: number; delivery: number; total: number };
+    ytd: { owners: number; gear: number; admin: number; delivery: number; total: number };
+    mtd: { owners: number; gear: number; admin: number; delivery: number; total: number };
   }) {
     return (
       <div className="bg-bg-secondary border border-border p-5 dash-card">
@@ -119,6 +85,12 @@ export default async function EarningsPage() {
           <CountUp value={at.total} prefix="$" decimals={2} />
         </p>
         <div className="space-y-1 mt-2 text-xs text-text-muted">
+          {at.owners > 0 && (
+            <div className="flex justify-between">
+              <span>Owner&apos;s Fee</span>
+              <span className="text-text-secondary">${at.owners.toFixed(2)}</span>
+            </div>
+          )}
           <div className="flex justify-between">
             <span>Gear</span>
             <span className="text-text-secondary">${at.gear.toFixed(2)}</span>

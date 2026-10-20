@@ -114,10 +114,9 @@ export default function PartnerOnboardingPage() {
               you list your gear through our platform and earn revenue each time it&apos;s rented.
             </p>
             <p className="mb-4">
-              <strong style={{ color: "#e0e0e8" }}>Revenue split:</strong> You receive{" "}
-              <strong style={{ color: "#c8a44a" }}>50%</strong> of the rental fee for your equipment.
-              Paris Backline retains 50% to cover client acquisition, booking management, invoicing, logistics
-              coordination, and insurance administration.
+              <strong style={{ color: "#e0e0e8" }}>Revenue split:</strong> You receive the{" "}
+              <strong style={{ color: "#c8a44a" }}>Gear Side</strong>{" "}of each rental, after Paris
+              Backline&apos;s owner, referral and admin fees.
             </p>
             <p className="mb-4">
               <strong style={{ color: "#e0e0e8" }}>What we expect:</strong> By joining this program, you confirm

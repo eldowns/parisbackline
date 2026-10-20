@@ -39,6 +39,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       commPartner: body.commPartner,
       invoicePartner: body.invoicePartner,
       accountPartner: body.accountPartner,
+      adminBy: body.adminBy || "both",
+      dropoffBy: body.dropoffBy || null,
+      pickupBy: body.pickupBy || null,
+      minimumAdjustment: body.minimumAdjustment || 0,
       invoiceSent: ["invoice_sent", "paid"].includes(body.status),
       invoicePaid: body.status === "paid",
       notes: body.notes,
@@ -52,10 +56,11 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         })),
       },
       subRentals: {
-        create: (body.subRentals || []).map((s: { provider: string; description: string; cost: number }) => ({
+        create: (body.subRentals || []).map((s: { provider: string; description: string; cost: number; clientPrice?: number | null }) => ({
           provider: s.provider,
           description: s.description,
           cost: s.cost,
+          clientPrice: s.clientPrice ?? null,
         })),
       },
     },

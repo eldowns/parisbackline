@@ -1,5 +1,6 @@
 import React from "react";
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import type { InvoiceItem, InvoiceTotalRow } from "./invoice-totals";
 
 const gold = "#c8a44a";
 const bg = "#09090f";
@@ -225,35 +226,13 @@ interface InvoiceData {
   dateStart: string;
   dateEnd: string;
   billingDays: number;
-  equipment: {
-    name: string;
-    quantity: number;
-    rentalPrice: number;
-  }[];
-  subRentals: {
-    provider: string;
-    description: string;
-    cost: number;
-  }[];
-  deliveryFee: number;
-  discountType?: "amount" | "percent";
-  discountValue?: number;
+  items: InvoiceItem[];
+  rows: InvoiceTotalRow[];
+  grandTotal: number;
   notes?: string | null;
 }
 
 export function InvoicePDF({ data }: { data: InvoiceData }) {
-  const days = data.billingDays || 1;
-  const equipmentTotal = data.equipment.reduce((s, e) => s + e.rentalPrice * e.quantity * days, 0);
-  const subRentalTotal = data.subRentals.reduce((s, sr) => s + sr.cost, 0);
-  const subtotal = equipmentTotal + subRentalTotal;
-  const discountAmount =
-    data.discountValue && data.discountValue > 0
-      ? data.discountType === "percent"
-        ? subtotal * (data.discountValue / 100)
-        : data.discountValue
-      : 0;
-  const grandTotal = subtotal - discountAmount + data.deliveryFee;
-
   return (
     <Document>
       <Page size="A4" style={s.page}>
@@ -305,59 +284,31 @@ export function InvoicePDF({ data }: { data: InvoiceData }) {
             <Text style={[s.tableHeaderText, s.colPrice]}>Rate / Day</Text>
             <Text style={[s.tableHeaderText, s.colTotal]}>Total</Text>
           </View>
-          {data.equipment.map((item, i) => (
+          {data.items.map((item, i) => (
             <View key={i} style={s.tableRow}>
               <Text style={[s.tableCell, s.colItem]}>{item.name}</Text>
               <Text style={[s.tableCellMuted, s.colQty]}>{item.quantity}</Text>
-              <Text style={[s.tableCellMuted, s.colPrice]}>${(item.rentalPrice * item.quantity).toFixed(2)}</Text>
-              <Text style={[s.tableCell, s.colTotal]}>${(item.rentalPrice * item.quantity * days).toFixed(2)}</Text>
-            </View>
-          ))}
-          {data.subRentals.map((sr, i) => (
-            <View key={`sr-${i}`} style={s.tableRow}>
-              <Text style={[s.tableCell, s.colItem]}>{sr.description} (via {sr.provider})</Text>
-              <Text style={[s.tableCellMuted, s.colQty]}>1</Text>
-              <Text style={[s.tableCellMuted, s.colPrice]}></Text>
-              <Text style={[s.tableCell, s.colTotal]}>${sr.cost.toFixed(2)}</Text>
+              <Text style={[s.tableCellMuted, s.colPrice]}>
+                {item.ratePerDay != null ? `$${item.ratePerDay.toFixed(2)}` : ""}
+              </Text>
+              <Text style={[s.tableCell, s.colTotal]}>${item.total.toFixed(2)}</Text>
             </View>
           ))}
         </View>
 
         {/* Totals */}
         <View style={s.totalsSection}>
-          <View style={s.totalRow}>
-            <Text style={s.totalLabel}>Equipment</Text>
-            <Text style={s.totalValue}>${equipmentTotal.toFixed(2)}</Text>
-          </View>
-          {subRentalTotal > 0 && (
-            <View style={s.totalRow}>
-              <Text style={s.totalLabel}>Sub-Rentals</Text>
-              <Text style={s.totalValue}>${subRentalTotal.toFixed(2)}</Text>
+          {data.rows.map((row, i) => (
+            <View key={i} style={s.totalRow}>
+              <Text style={s.totalLabel}>{row.label}</Text>
+              <Text style={s.totalValue}>
+                {row.discount ? "−" : ""}${row.amount.toFixed(2)}
+              </Text>
             </View>
-          )}
-          {discountAmount > 0 && (
-            <>
-              <View style={s.totalRow}>
-                <Text style={s.totalLabel}>Subtotal</Text>
-                <Text style={s.totalValue}>${subtotal.toFixed(2)}</Text>
-              </View>
-              <View style={s.totalRow}>
-                <Text style={s.totalLabel}>
-                  Discount{data.discountType === "percent" ? ` (${data.discountValue}%)` : ""}
-                </Text>
-                <Text style={s.totalValue}>−${discountAmount.toFixed(2)}</Text>
-              </View>
-            </>
-          )}
-          {data.deliveryFee > 0 && (
-            <View style={s.totalRow}>
-              <Text style={s.totalLabel}>Delivery</Text>
-              <Text style={s.totalValue}>${data.deliveryFee.toFixed(2)}</Text>
-            </View>
-          )}
+          ))}
           <View style={s.grandTotalRow}>
             <Text style={s.grandTotalLabel}>Total Due</Text>
-            <Text style={s.grandTotalValue}>${grandTotal.toFixed(2)}</Text>
+            <Text style={s.grandTotalValue}>${data.grandTotal.toFixed(2)}</Text>
           </View>
         </View>
 

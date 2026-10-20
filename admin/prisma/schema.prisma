@@ -63,6 +63,12 @@ model Booking {
   commPartner     String
   invoicePartner  String
   accountPartner  String
+  // Payout structure: 1 = old 50/50 split (bookings before Jutes, Jan 2027), 2 = current (src/lib/split.ts)
+  payoutVersion     Int     @default(1)
+  adminBy           String  @default("both")
+  dropoffBy         String?
+  pickupBy          String?
+  minimumAdjustment Float   @default(0)
   invoiceSent     Boolean            @default(false)
   invoicePaid     Boolean            @default(false)
   notes           String?
@@ -93,6 +99,7 @@ model SubRental {
   provider    String
   description String
   cost        Float
+  clientPrice Float?
 }
 
 model PartnerSubmission {
