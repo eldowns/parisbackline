@@ -6,7 +6,8 @@ export const MINIMUM_ORDER = 100;
 export const OWNERS_FEE_RATE = 15; // % of gross
 export const REFERRAL_RATE = 10; // % of (gross − Owner's Fee)
 export const ADMIN_RATE = 25; // % of remainder on our own gear
-export const PARTNER_ADMIN_RATE = 50; // % of remainder on gear partners' gear (50/50 with the partner)
+export const PARTNER_SHARE_RATE = 50; // % of remainder on gear partners' gear that goes to the partner
+// …Admin still takes ADMIN_RATE of it, and the rest goes to Eric/Marko equally
 export const DELIVERY_LEG_FEE = 50;
 export const SUB_RENTAL_MARKUP = 15; // % added to our cost to get the client price
 export const PARTNERS = ["eric", "marko"] as const;
@@ -142,16 +143,19 @@ export function calculateSplit(input: SplitInput): SplitResult {
   const totalWeight = [...weights.values()].reduce((s, w) => s + w, 0);
   const partnerWeight = [...weights].reduce((s, [key, w]) => s + (isGearPartner(key) ? w : 0), 0);
 
-  // Gear partners (e.g. Dario) split their slice 50/50 with Admin; our own gear gives Admin 25%
+  // Our own gear: Admin 25%, Gear 75%.
+  // Gear partners (e.g. Dario): partner 50%, Admin 25%, Eric/Marko the last 25% equally.
   const partnerRemainder = totalWeight ? Math.round((remainder * partnerWeight) / totalWeight) : 0;
   const ownRemainder = remainder - partnerRemainder;
-  const partnerAdmin = pct(partnerRemainder, PARTNER_ADMIN_RATE);
-  const partnerGear = partnerRemainder - partnerAdmin;
+  const ownAdmin = pct(ownRemainder, ADMIN_RATE);
+  const partnerGear = pct(partnerRemainder, PARTNER_SHARE_RATE);
+  const partnerAdmin = pct(partnerRemainder, ADMIN_RATE);
+  const partnerHouse = partnerRemainder - partnerGear - partnerAdmin;
   const adminBy = (input.adminBy || "both").toLowerCase();
-  const adminRaw = pct(ownRemainder, ADMIN_RATE) + partnerAdmin;
+  const adminRaw = ownAdmin + partnerAdmin;
   const adminSide = adminBy === "both" ? evenDown(adminRaw) : adminRaw;
   const gearSide = remainder - adminSide;
-  const ownGear = gearSide - partnerGear;
+  const ownGear = ownRemainder - ownAdmin + (adminRaw - adminSide); // spare cent lands in Gear
 
   const payouts: Record<string, Record<string, number>> = { eric: emptyPayout(), marko: emptyPayout() };
   const person = (key: string) => (payouts[key] ||= emptyPayout());
@@ -186,12 +190,11 @@ export function calculateSplit(input: SplitInput): SplitResult {
   };
 
   const keys = [...weights.keys()];
-  const partnerKeys = keys.filter(isGearPartner);
-  const ownKeys = keys.filter((k) => !isGearPartner(k) && weights.get(k)! > 0);
-  // All-partner order: a spare cent from evening out admin goes to the partner, not to us
-  const partnerPool = ownKeys.length === 0 && partnerKeys.length > 0 ? partnerGear + ownGear : partnerGear;
-  const ownPool = gearSide - partnerPool;
-  const gearShares = [...sharePool(partnerPool, partnerKeys), ...sharePool(ownPool, ownKeys)];
+  const gearShares = [
+    ...sharePool(partnerGear, keys.filter(isGearPartner)),
+    ...sharePool(ownGear, keys.filter((k) => !isGearPartner(k) && weights.get(k)! > 0)),
+    [HOUSE, partnerHouse] as [string, number],
+  ];
 
   for (const [key, share] of gearShares) {
     if (key === HOUSE) {
