@@ -36,7 +36,7 @@ export interface PartnerTotals {
 }
 
 export interface PayoutView {
-  rows: { label: string; amount: number; tone?: "minus" | "warning" | "muted" }[];
+  rows: { label: string; amount: number; tone?: "total" | "minus" | "plus" | "warning" | "muted" }[];
   netLabel: string;
   net: number;
   tiles: { label: string; amount: number }[];
@@ -100,8 +100,14 @@ const money = (n: number) => `$${n.toFixed(2)}`;
 const label = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export function viewFromSplit(r: SplitResult): PayoutView {
-  const rows: PayoutView["rows"] = [{ label: "Total Job", amount: r.clientTotal }];
+  const rows: PayoutView["rows"] = [];
+  if (r.discount > 0 || r.minimumAdjustment > 0) {
+    rows.push({ label: "Rental Subtotal", amount: r.rentalSubtotal });
+    if (r.discount > 0) rows.push({ label: "Discount", amount: r.discount, tone: "minus" });
+    if (r.minimumAdjustment > 0) rows.push({ label: "Minimum Order Adjustment", amount: r.minimumAdjustment, tone: "plus" });
+  }
   if (r.deliveryTotal > 0) rows.push({ label: "Delivery (paid per leg)", amount: r.deliveryTotal, tone: "muted" });
+  rows.push({ label: "Total Job", amount: r.clientTotal, tone: "total" });
   if (r.subRentalCost > 0) rows.push({ label: "Sub-Rental Costs", amount: r.subRentalCost, tone: "warning" });
   rows.push({ label: "Gross", amount: r.gross });
   rows.push({ label: "Owner's Fee (15%)", amount: r.ownersFee, tone: "minus" });
@@ -142,7 +148,7 @@ export function viewFromSplit(r: SplitResult): PayoutView {
 }
 
 export function viewFromLegacy(p: PayoutBreakdown, rentalFee: number, deliveryFee: number): PayoutView {
-  const rows: PayoutView["rows"] = [{ label: "Total Job", amount: rentalFee + deliveryFee }];
+  const rows: PayoutView["rows"] = [{ label: "Total Job", amount: rentalFee + deliveryFee, tone: "total" }];
   if (p.referral.amount > 0) rows.push({ label: "Referral Fee", amount: p.referral.amount, tone: "minus" });
   if (p.totalSubRentalCost > 0) rows.push({ label: "Sub-Rental Costs", amount: p.totalSubRentalCost, tone: "warning" });
 
