@@ -111,11 +111,46 @@ describe("gear distribution", () => {
       ],
       adminBy: "marko",
     });
+    // remainder $850: our slice $510 (Admin 25%), Dario's slice $340 (50/50 with Admin)
     expect(r.payouts.eric.gear).toBe(382.5);
-    expect(r.payouts.Dario.gear).toBe(255);
+    expect(r.payouts.Dario.gear).toBe(170);
     expect(r.payouts.Dario.owners).toBe(0);
     expect(r.payouts.Dario.admin).toBe(0);
-    expect(r.payouts.marko.admin).toBe(212.5);
+    expect(r.payouts.marko.admin).toBe(297.5);
+  });
+
+  it("gear partners split 50/50 with Admin after the Owner's Fee", () => {
+    const r = calculateSplit({ items: [{ owner: "Dario", amount: 2400 }], adminBy: "marko" });
+    expect(r.ownersFee).toBe(360);
+    expect(r.adminSide).toBe(1020);
+    expect(r.payouts.Dario.gear).toBe(1020);
+    expect(r.payouts.marko.total).toBe(1200);
+    expect(r.payouts.eric.total).toBe(180);
+  });
+
+  it("partner 50/50 comes after discount and referral, never delivery", () => {
+    const r = calculateSplit({
+      items: [{ owner: "Dario", amount: 2400 }],
+      discountType: "amount",
+      discountValue: 200,
+      referralName: "Sam",
+      adminBy: "both",
+      dropoffBy: "eric",
+      pickupBy: "eric",
+    });
+    // gross 2200 → Owner's 330 → referral 187 → 1683 left → 841.50 each
+    expect(r.referralFee).toBe(187);
+    expect(r.payouts.Dario.gear).toBe(841.5);
+    expect(r.adminSide).toBe(841.5);
+    expect(r.deliveryTotal).toBe(100);
+    expect(r.payouts.Dario.delivery).toBe(0);
+  });
+
+  it("all-partner order with 'both' admin gives the spare cent to the partner", () => {
+    const r = calculateSplit({ items: [{ owner: "Dario", amount: 100.03 }], adminBy: "both" });
+    expect(r.payouts.eric.gear + r.payouts.marko.gear).toBe(0);
+    const paid = Object.values(r.payouts).reduce((s, p) => s + p.total, 0);
+    expect(paid).toBeCloseTo(r.clientTotal, 10);
   });
 
   it("splits Gear from custom items between the partners", () => {
@@ -128,14 +163,14 @@ describe("gear distribution", () => {
     const r = calculateSplit({
       items: [
         { owner: "eric", amount: 100 },
-        { owner: "marko", amount: 100 },
-        { owner: "Dario", amount: 101 },
+        { owner: "marko", amount: 101 },
+        { owner: "Dario", amount: 100 },
       ],
       adminBy: "eric",
     });
     const gearTotal = r.payouts.eric.gear + r.payouts.marko.gear + r.payouts.Dario.gear;
     expect(gearTotal).toBeCloseTo(r.gearSide, 10);
-    expect(r.payouts.Dario.gear).toBeGreaterThan(r.payouts.eric.gear);
+    expect(r.payouts.marko.gear).toBeGreaterThan(r.payouts.eric.gear);
   });
 });
 
