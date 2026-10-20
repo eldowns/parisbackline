@@ -103,7 +103,7 @@ describe("referrals", () => {
 });
 
 describe("gear distribution", () => {
-  it("shares Gear Side by revenue, third parties get Gear only", () => {
+  it("mixed order: our gear Admin 25% / Gear 75%, partner gear 50 / 25 / 25", () => {
     const r = calculateSplit({
       items: [
         { owner: "eric", amount: 600 },
@@ -111,24 +111,29 @@ describe("gear distribution", () => {
       ],
       adminBy: "marko",
     });
-    // remainder $850: our slice $510 (Admin 25%), Dario's slice $340 (50/50 with Admin)
-    expect(r.payouts.eric.gear).toBe(382.5);
+    // remainder $850: our slice $510 → Admin 127.50, Eric 382.50
+    //                 Dario's slice $340 → Dario 170, Admin 85, Eric/Marko 42.50 each
     expect(r.payouts.Dario.gear).toBe(170);
     expect(r.payouts.Dario.owners).toBe(0);
     expect(r.payouts.Dario.admin).toBe(0);
-    expect(r.payouts.marko.admin).toBe(297.5);
+    expect(r.payouts.marko.admin).toBe(212.5);
+    expect(r.payouts.eric.gear).toBe(425);
+    expect(r.payouts.marko.gear).toBe(42.5);
   });
 
-  it("gear partners split 50/50 with Admin after the Owner's Fee", () => {
+  it("partner gear: partner 50%, Admin 25%, Eric/Marko 25% equally", () => {
     const r = calculateSplit({ items: [{ owner: "Dario", amount: 2400 }], adminBy: "marko" });
     expect(r.ownersFee).toBe(360);
-    expect(r.adminSide).toBe(1020);
+    expect(r.remainder).toBe(2040);
     expect(r.payouts.Dario.gear).toBe(1020);
-    expect(r.payouts.marko.total).toBe(1200);
-    expect(r.payouts.eric.total).toBe(180);
+    expect(r.adminSide).toBe(510);
+    expect(r.payouts.eric.gear).toBe(255);
+    expect(r.payouts.marko.gear).toBe(255);
+    expect(r.payouts.marko.total).toBe(945);
+    expect(r.payouts.eric.total).toBe(435);
   });
 
-  it("partner 50/50 comes after discount and referral, never delivery", () => {
+  it("partner split comes after discount and referral, never delivery", () => {
     const r = calculateSplit({
       items: [{ owner: "Dario", amount: 2400 }],
       discountType: "amount",
@@ -138,17 +143,18 @@ describe("gear distribution", () => {
       dropoffBy: "eric",
       pickupBy: "eric",
     });
-    // gross 2200 → Owner's 330 → referral 187 → 1683 left → 841.50 each
+    // gross 2200 → Owner's 330 → referral 187 → 1683 remainder
     expect(r.referralFee).toBe(187);
     expect(r.payouts.Dario.gear).toBe(841.5);
-    expect(r.adminSide).toBe(841.5);
+    expect(r.adminSide).toBe(420.74); // kept even for "both"; spare cent to Gear
     expect(r.deliveryTotal).toBe(100);
     expect(r.payouts.Dario.delivery).toBe(0);
+    const paid = Object.values(r.payouts).reduce((s, p) => s + p.total, 0) + r.referralFee;
+    expect(paid).toBeCloseTo(r.clientTotal, 10);
   });
 
-  it("all-partner order with 'both' admin gives the spare cent to the partner", () => {
+  it("partner-only order reconciles to the cent", () => {
     const r = calculateSplit({ items: [{ owner: "Dario", amount: 100.03 }], adminBy: "both" });
-    expect(r.payouts.eric.gear + r.payouts.marko.gear).toBe(0);
     const paid = Object.values(r.payouts).reduce((s, p) => s + p.total, 0);
     expect(paid).toBeCloseTo(r.clientTotal, 10);
   });
