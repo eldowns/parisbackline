@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Arrow } from "./Chrome";
 import { equipment } from "./equipment";
-import { emptyRider, missingFields, riderFileName, showLine, type Rider } from "./rider";
+import { emptyRider, missingFields, riderFileName, type Rider } from "./rider";
 
 const STORAGE_KEY = "pb-rider-draft";
 
@@ -24,8 +24,9 @@ export default function RiderBuilder() {
       const saved = window.localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const draft = JSON.parse(saved);
-        // Older drafts carried a per-item category; it is no longer part of the rider.
-        setRider({ ...emptyRider, ...draft, items: (draft.items ?? []).map(({ id, item, quantity, notes }: Rider["items"][number]) => ({ id, item, quantity, notes })) });
+        // Older drafts carried show details and a per-item category; neither is part of the rider now.
+        const { show, date, venue, ...fields } = draft;
+        setRider({ ...emptyRider, ...fields, items: (draft.items ?? []).map(({ id, item, quantity, notes }: Rider["items"][number]) => ({ id, item, quantity, notes })) });
       }
     } catch {}
     setLoaded(true);
@@ -80,8 +81,6 @@ export default function RiderBuilder() {
     if (window.confirm("Clear this rider and start over?")) { setRider(emptyRider); setLine(blankLine); }
   }
 
-  const show = showLine(rider);
-
   return <div className="pb-rider">
     <div className="pb-rider-form">
       <fieldset className="pb-rider-step">
@@ -96,16 +95,7 @@ export default function RiderBuilder() {
       </fieldset>
 
       <fieldset className="pb-rider-step">
-        <legend><span>02</span>Show details <em>optional</em></legend>
-        <div className="pb-fields">
-          <label>Show or tour<input value={rider.show} onChange={set("show")} placeholder="Tour name or event"/></label>
-          <label>Date<input type="date" value={rider.date} onChange={set("date")}/></label>
-          <label className="pb-rider-wide">Venue / city<input value={rider.venue} onChange={set("venue")} placeholder="Venue name, city"/></label>
-        </div>
-      </fieldset>
-
-      <fieldset className="pb-rider-step">
-        <legend><span>03</span>Backline</legend>
+        <legend><span>02</span>Backline</legend>
         <form className="pb-rider-add" onSubmit={addItem} aria-label="Add a backline item">
           <label className="pb-rider-item">Item — make & model<input ref={itemInput} value={line.item} onChange={event => setLine({ ...line, item: event.target.value })} placeholder="e.g. Nord Stage 3 88" list="pb-rider-catalog"/></label>
           <label className="pb-rider-qty">Qty<input type="number" min={1} max={99} value={line.quantity} onChange={event => setLine({ ...line, quantity: Number(event.target.value) })}/></label>
@@ -131,7 +121,7 @@ export default function RiderBuilder() {
       </fieldset>
 
       <fieldset className="pb-rider-step">
-        <legend><span>04</span>Notes <em>optional</em></legend>
+        <legend><span>03</span>Notes <em>optional</em></legend>
         <label className="pb-rider-wide">Anything else the backline provider should know<textarea rows={4} value={rider.notes} onChange={set("notes")} placeholder="Load-in time, power needs, who to call on show day…"/></label>
       </fieldset>
 
@@ -147,7 +137,6 @@ export default function RiderBuilder() {
       <span className="pb-rider-preview-label">Preview</span>
       <div className="pb-rider-sheet">
         <div className="pb-rider-sheet-top"><div><small>ARTIST</small><h2>{rider.artist || "Artist name"}</h2></div><b>BACKLINE<br/>RIDER</b></div>
-        {show && <p className="pb-rider-sheet-show">{show}</p>}
         <dl className="pb-rider-sheet-contact">
           <div><dt>Contact</dt><dd>{rider.contactName || "—"}</dd></div>
           {rider.phone && <div><dt>Phone</dt><dd>{rider.phone}</dd></div>}

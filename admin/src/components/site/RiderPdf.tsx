@@ -1,5 +1,5 @@
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
-import { showLine, totalQuantity, type Rider } from "./rider";
+import { totalQuantity, type Rider } from "./rider";
 
 const ink = "#171717";
 const muted = "#6b6b66";
@@ -12,7 +12,6 @@ const s = StyleSheet.create({
   top: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", borderBottomWidth: 2, borderBottomColor: ink, paddingBottom: 14 },
   artist: { fontFamily: "Helvetica-Bold", fontSize: 30, letterSpacing: -0.6, lineHeight: 1.05, marginTop: 6, maxWidth: 360 },
   docType: { fontFamily: "Helvetica-Bold", fontSize: 11, letterSpacing: 1.5, textAlign: "right" },
-  showLine: { fontSize: 10, marginTop: 10, color: ink },
   contact: { flexDirection: "row", marginTop: 18, marginBottom: 26, borderBottomWidth: 1, borderBottomColor: rule, paddingBottom: 16 },
   contactCell: { flex: 1, paddingRight: 12 },
   contactValue: { fontSize: 10.5, marginTop: 4 },
@@ -31,7 +30,6 @@ const s = StyleSheet.create({
 });
 
 export default function RiderPdf({ rider }: { rider: Rider }) {
-  const show = showLine(rider);
   const contact = [
     { label: "Contact", value: rider.contactName },
     { label: "Phone", value: rider.phone },
@@ -44,7 +42,6 @@ export default function RiderPdf({ rider }: { rider: Rider }) {
         <View><Text style={s.label}>Artist</Text><Text style={s.artist}>{rider.artist}</Text></View>
         <Text style={s.docType}>BACKLINE{"\n"}RIDER</Text>
       </View>
-      {show ? <Text style={s.showLine}>{show}</Text> : null}
       <View style={s.contact}>
         {contact.map(cell => <View key={cell.label} style={s.contactCell}><Text style={s.label}>{cell.label}</Text><Text style={s.contactValue}>{cell.value}</Text></View>)}
       </View>
