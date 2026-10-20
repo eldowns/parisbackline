@@ -5,7 +5,8 @@
 export const MINIMUM_ORDER = 100;
 export const OWNERS_FEE_RATE = 15; // % of gross
 export const REFERRAL_RATE = 10; // % of (gross − Owner's Fee)
-export const ADMIN_RATE = 25; // % of remainder
+export const ADMIN_RATE = 25; // % of remainder on our own gear
+export const PARTNER_ADMIN_RATE = 50; // % of remainder on gear partners' gear (50/50 with the partner)
 export const DELIVERY_LEG_FEE = 50;
 export const SUB_RENTAL_MARKUP = 15; // % added to our cost to get the client price
 export const PARTNERS = ["eric", "marko"] as const;
@@ -130,10 +131,27 @@ export function calculateSplit(input: SplitInput): SplitResult {
   const referralName = isOutsideReferrer(input.referralName) ? normalizePerson(input.referralName) : null;
   const referralFee = referralName ? pct(gross - ownersFee, REFERRAL_RATE) : 0;
   const remainder = gross - ownersFee - referralFee;
+
+  // 6. Each owner's slice of the remainder, by what their gear earned.
+  //    Custom items and sub-rental markup have no owner (HOUSE → Eric/Marko 50/50).
+  const weights = new Map<string, number>();
+  const addWeight = (key: string, w: number) => weights.set(key, (weights.get(key) || 0) + Math.max(0, w));
+  for (const i of itemCents) addWeight(normalizePerson(i.owner) || HOUSE, i.amount);
+  for (const sr of subCents) addWeight(HOUSE, sr.clientPrice - sr.cost);
+  const isGearPartner = (key: string) => key !== HOUSE && !(PARTNERS as readonly string[]).includes(key);
+  const totalWeight = [...weights.values()].reduce((s, w) => s + w, 0);
+  const partnerWeight = [...weights].reduce((s, [key, w]) => s + (isGearPartner(key) ? w : 0), 0);
+
+  // Gear partners (e.g. Dario) split their slice 50/50 with Admin; our own gear gives Admin 25%
+  const partnerRemainder = totalWeight ? Math.round((remainder * partnerWeight) / totalWeight) : 0;
+  const ownRemainder = remainder - partnerRemainder;
+  const partnerAdmin = pct(partnerRemainder, PARTNER_ADMIN_RATE);
+  const partnerGear = partnerRemainder - partnerAdmin;
   const adminBy = (input.adminBy || "both").toLowerCase();
-  const adminRaw = pct(remainder, ADMIN_RATE);
+  const adminRaw = pct(ownRemainder, ADMIN_RATE) + partnerAdmin;
   const adminSide = adminBy === "both" ? evenDown(adminRaw) : adminRaw;
   const gearSide = remainder - adminSide;
+  const ownGear = gearSide - partnerGear;
 
   const payouts: Record<string, Record<string, number>> = { eric: emptyPayout(), marko: emptyPayout() };
   const person = (key: string) => (payouts[key] ||= emptyPayout());
@@ -147,27 +165,33 @@ export function calculateSplit(input: SplitInput): SplitResult {
     person(normalizePerson(adminBy) || "eric").admin += adminSide;
   }
 
-  // 6. Gear Side, proportional to what each owner's gear earned
-  const weights = new Map<string, number>();
-  const addWeight = (key: string, w: number) => weights.set(key, (weights.get(key) || 0) + Math.max(0, w));
-  for (const i of itemCents) addWeight(normalizePerson(i.owner) || HOUSE, i.amount);
-  for (const sr of subCents) addWeight(HOUSE, sr.clientPrice - sr.cost);
-  const totalWeight = [...weights.values()].reduce((s, w) => s + w, 0);
-
-  const gearShares = new Map<string, number>();
-  if (totalWeight === 0) {
-    gearShares.set(HOUSE, gearSide);
-  } else {
+  // Share a pool by weight; any leftover cent goes to the biggest share
+  const sharePool = (pool: number, keys: string[]): Map<string, number> => {
+    const shares = new Map<string, number>();
+    const poolWeight = keys.reduce((s, k) => s + weights.get(k)!, 0);
+    if (poolWeight === 0) {
+      if (pool) shares.set(HOUSE, pool);
+      return shares;
+    }
     let allocated = 0;
     let largest = "";
-    for (const [key, w] of weights) {
-      const share = Math.floor((gearSide * w) / totalWeight);
-      gearShares.set(key, share);
+    for (const key of keys) {
+      const share = Math.floor((pool * weights.get(key)!) / poolWeight);
+      shares.set(key, share);
       allocated += share;
-      if (!largest || w > weights.get(largest)!) largest = key;
+      if (!largest || weights.get(key)! > weights.get(largest)!) largest = key;
     }
-    gearShares.set(largest, gearShares.get(largest)! + (gearSide - allocated));
-  }
+    shares.set(largest, shares.get(largest)! + (pool - allocated));
+    return shares;
+  };
+
+  const keys = [...weights.keys()];
+  const partnerKeys = keys.filter(isGearPartner);
+  const ownKeys = keys.filter((k) => !isGearPartner(k) && weights.get(k)! > 0);
+  // All-partner order: a spare cent from evening out admin goes to the partner, not to us
+  const partnerPool = ownKeys.length === 0 && partnerKeys.length > 0 ? partnerGear + ownGear : partnerGear;
+  const ownPool = gearSide - partnerPool;
+  const gearShares = [...sharePool(partnerPool, partnerKeys), ...sharePool(ownPool, ownKeys)];
 
   for (const [key, share] of gearShares) {
     if (key === HOUSE) {

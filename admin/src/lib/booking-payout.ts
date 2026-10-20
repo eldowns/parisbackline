@@ -136,7 +136,7 @@ export function viewFromSplit(r: SplitResult): PayoutView {
     net: r.remainder,
     tiles: [
       { label: "Gear Side", amount: r.gearSide },
-      { label: "Admin (25%)", amount: r.adminSide },
+      { label: "Admin", amount: r.adminSide },
     ],
     people,
     partners: { eric: partner("eric"), marko: partner("marko") },

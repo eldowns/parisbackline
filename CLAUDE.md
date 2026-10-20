@@ -49,8 +49,9 @@ Calculated on the rental only; delivery is outside the waterfall.
 3. Gross = rental total − sub-rental costs (providers get their cost; only the markup is split)
 4. Owner's Fee = 15% of gross, split 50/50 Eric/Marko
 5. Referral = 10% of (gross − Owner's Fee), outside referrers only (not Eric/Marko)
-6. Admin = 25% of remainder, one pie: Eric, Marko or Both
-7. Gear = leftover, shared by gear revenue; custom items and sub-rental markup go to Eric/Marko 50/50
+6. Remainder is sliced by gear revenue. Our own gear (Eric/Marko, custom items, sub-rental markup):
+   Admin 25%, Gear 75%. Gear partners (e.g. Dario): 50% partner / 50% Admin.
+7. Admin is one pie: Eric, Marko or Both. Gear with no owner goes to Eric/Marko 50/50
 8. Delivery = $50 drop-off + $50 pick-up, each paid to whoever did it; a leg the client handles is left off
 Rounding: integer cents; Owner's Fee and "Both" admin kept even; spare cents go to Gear (largest owner).
 
