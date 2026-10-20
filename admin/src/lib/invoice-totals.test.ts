@@ -84,3 +84,22 @@ describe("invoiceTotals — old structure is unchanged", () => {
     expect(t.rows.map((r) => r.label)).toEqual(["Equipment", "Sub-Rentals", "Subtotal", "Discount (10%)", "Delivery"]);
   });
 });
+
+describe("payout panel", () => {
+  it("shows the subtotal and discount before the job total", async () => {
+    const { payoutViewForBooking } = await import("./booking-payout");
+    const view = payoutViewForBooking(
+      booking({
+        dateStart: "2027-01-30T12:00:00Z",
+        dateEnd: "2027-02-16T12:00:00Z",
+        equipment: [gear(50, 4)],
+        discountValue: 200,
+      })
+    );
+    expect(view.rows.slice(0, 3)).toEqual([
+      { label: "Rental Subtotal", amount: 2400 },
+      { label: "Discount", amount: 200, tone: "minus" },
+      { label: "Total Job", amount: 2200, tone: "total" },
+    ]);
+  });
+});

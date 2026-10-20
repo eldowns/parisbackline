@@ -16,7 +16,7 @@ export default function PayoutBreakdown({ view }: { view: PayoutView }) {
       <div className="p-5 space-y-4 text-sm">
         {/* Summary */}
         <div className="space-y-2">
-          {view.rows.map((row, i) => (
+          {view.rows.map((row) => (
             <div key={row.label} className="flex justify-between text-text-secondary">
               <span>{row.label}</span>
               <span
@@ -27,12 +27,12 @@ export default function PayoutBreakdown({ view }: { view: PayoutView }) {
                       ? "text-warning"
                       : row.tone === "muted"
                         ? "text-text-muted"
-                        : i === 0
+                        : row.tone === "total"
                           ? "font-semibold text-text-primary"
                           : "text-text-primary"
                 }
               >
-                {row.tone === "minus" ? "-" : ""}${row.amount.toFixed(2)}
+                {row.tone === "minus" ? "-" : row.tone === "plus" ? "+" : ""}${row.amount.toFixed(2)}
               </span>
             </div>
           ))}
