@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import type { InvoiceItem, InvoiceTotalRow } from "@/lib/invoice-totals";
 
 interface Props {
   bookingId: string;
@@ -20,12 +21,9 @@ interface InvoicePreview {
     dateEnd: string;
     rentalDays: number;
     billingDays: number;
-    discountType?: "amount" | "percent";
-    discountValue?: number;
     client: { name: string; email?: string | null; company?: string | null };
-    equipment: { name: string; quantity: number; rentalPrice: number }[];
-    subRentals: { description: string; provider: string; cost: number }[];
-    deliveryFee: number;
+    items: InvoiceItem[];
+    rows: InvoiceTotalRow[];
   };
 }
 
@@ -94,8 +92,6 @@ export default function SendInvoiceModal({ bookingId, clientName, clientEmail, o
   const days = d?.billingDays || 1;
   const rentalDays = d?.rentalDays || days;
   const weeklyBilling = rentalDays > days;
-  const equipTotal = d?.equipment.reduce((s, e) => s + e.rentalPrice * e.quantity * days, 0) || 0;
-  const subTotal = d?.subRentals.reduce((s, sr) => s + sr.cost, 0) || 0;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={onClose}>
@@ -191,49 +187,28 @@ export default function SendInvoiceModal({ bookingId, clientName, clientEmail, o
                         </tr>
                       </thead>
                       <tbody>
-                        {d.equipment.map((e, i) => (
+                        {d.items.map((item, i) => (
                           <tr key={i}>
-                            <td className="text-text-secondary py-0.5">{e.name}</td>
-                            <td className="text-text-secondary text-center py-0.5">{e.quantity}</td>
-                            <td className="text-text-secondary text-right py-0.5">${(e.rentalPrice * e.quantity).toFixed(2)}</td>
-                            <td className="text-text-primary text-right py-0.5">${(e.rentalPrice * e.quantity * days).toFixed(2)}</td>
-                          </tr>
-                        ))}
-                        {d.subRentals.map((sr, i) => (
-                          <tr key={`sr-${i}`}>
-                            <td className="text-text-secondary py-0.5">{sr.description}</td>
-                            <td className="text-text-secondary text-center py-0.5">1</td>
-                            <td className="text-text-secondary text-right py-0.5">—</td>
-                            <td className="text-text-primary text-right py-0.5">${sr.cost.toFixed(2)}</td>
+                            <td className="text-text-secondary py-0.5">{item.name}</td>
+                            <td className="text-text-secondary text-center py-0.5">{item.quantity}</td>
+                            <td className="text-text-secondary text-right py-0.5">
+                              {item.ratePerDay != null ? `$${item.ratePerDay.toFixed(2)}` : "—"}
+                            </td>
+                            <td className="text-text-primary text-right py-0.5">${item.total.toFixed(2)}</td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
 
                     <div className="border-t border-border pt-2 space-y-1">
-                      {(d.discountValue ?? 0) > 0 && (() => {
-                        const subtotal = equipTotal + subTotal;
-                        const dv = d.discountValue ?? 0;
-                        const disc = d.discountType === "percent" ? subtotal * (dv / 100) : dv;
-                        return (
-                          <>
-                            <div className="flex justify-between text-xs">
-                              <span className="text-text-secondary">Subtotal</span>
-                              <span className="text-text-primary">${subtotal.toFixed(2)}</span>
-                            </div>
-                            <div className="flex justify-between text-xs">
-                              <span className="text-text-secondary">Discount{d.discountType === "percent" ? ` (${d.discountValue}%)` : ""}</span>
-                              <span className="text-accent">−${disc.toFixed(2)}</span>
-                            </div>
-                          </>
-                        );
-                      })()}
-                      {d.deliveryFee > 0 && (
-                        <div className="flex justify-between text-xs">
-                          <span className="text-text-secondary">Delivery</span>
-                          <span className="text-text-primary">${d.deliveryFee.toFixed(2)}</span>
+                      {d.rows.map((row, i) => (
+                        <div key={i} className="flex justify-between text-xs">
+                          <span className="text-text-secondary">{row.label}</span>
+                          <span className={row.discount ? "text-accent" : "text-text-primary"}>
+                            {row.discount ? "−" : ""}${row.amount.toFixed(2)}
+                          </span>
                         </div>
-                      )}
+                      ))}
                       <div className="flex justify-between text-xs border-t border-border pt-1 mt-1">
                         <span className="text-text-primary font-medium">Total</span>
                         <span className="text-accent font-bold">${preview?.grandTotal.toFixed(2)}</span>

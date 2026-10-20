@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { format } from "date-fns";
 import Link from "next/link";
-import { calculatePayout } from "@/lib/revenue";
+import { payoutViewForBooking } from "@/lib/booking-payout";
 import PayoutBreakdown from "@/components/bookings/PayoutBreakdown";
 import DeleteBookingButton from "@/components/bookings/DeleteBookingButton";
 import SendInvoiceButton from "@/components/bookings/SendInvoiceButton";
@@ -18,26 +18,8 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
 
   if (!booking) notFound();
 
-  const payout = calculatePayout({
-    rentalFee: booking.rentalFee,
-    deliveryFee: booking.deliveryFee,
-    deliveryBy: booking.deliveryBy,
-    referralFee: booking.referralFee,
-    leadPartner: booking.leadPartner,
-    commPartner: booking.commPartner,
-    invoicePartner: booking.invoicePartner,
-    accountPartner: booking.accountPartner,
-    gearItems: booking.equipment
-      .filter((be) => be.equipment)
-      .map((be) => ({
-        owner: be.equipment!.owner,
-        revenue: be.rentalPrice * be.quantity,
-      })),
-    subRentals: booking.subRentals.map((sr) => ({
-      provider: sr.provider,
-      cost: sr.cost,
-    })),
-  });
+  const view = payoutViewForBooking(booking);
+  const isV2 = booking.payoutVersion >= 2;
 
   const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -96,14 +78,25 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
                       ({booking.discountType === "percent" ? `${booking.discountValue}%` : `$${booking.discountValue}`} discount)
                     </span>
                   )}
+                  {booking.minimumAdjustment > 0 && (
+                    <span className="text-text-muted font-normal text-sm ml-1">
+                      (incl. ${booking.minimumAdjustment.toFixed(2)} minimum order adjustment)
+                    </span>
+                  )}
                 </p>
               </div>
               <div>
                 <p className="text-text-muted text-xs uppercase tracking-wider mb-1">Delivery Fee</p>
                 <p className="font-semibold">
                   ${booking.deliveryFee.toLocaleString()}
-                  {booking.deliveryBy && ` (${capitalize(booking.deliveryBy)})`}
+                  {!isV2 && booking.deliveryBy && ` (${capitalize(booking.deliveryBy)})`}
                 </p>
+                {isV2 && (
+                  <p className="text-text-muted text-xs mt-0.5">
+                    Drop-off: {booking.dropoffBy ? capitalize(booking.dropoffBy) : "client"} · Pick-up:{" "}
+                    {booking.pickupBy ? capitalize(booking.pickupBy) : "client"}
+                  </p>
+                )}
               </div>
               {booking.referralFee > 0 && (
                 <div>
@@ -124,6 +117,19 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
           </div>
 
           {/* Admin Roles */}
+          {isV2 ? (
+            <div className="bg-bg-secondary border border-border rounded-none p-5">
+              <h3 className="text-sm font-semibold mb-4">Admin</h3>
+              <div className="grid grid-cols-4 gap-4">
+                <div className="bg-bg-tertiary rounded-none p-3 text-center">
+                  <p className="text-text-muted text-xs uppercase tracking-wider mb-1">Done by</p>
+                  <p className={`text-sm font-semibold ${booking.adminBy === "eric" ? "text-eric" : booking.adminBy === "marko" ? "text-marko" : ""}`}>
+                    {booking.adminBy === "both" ? "Both" : capitalize(booking.adminBy)}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : (
           <div className="bg-bg-secondary border border-border rounded-none p-5">
             <h3 className="text-sm font-semibold mb-4">Admin Roles</h3>
             <div className="grid grid-cols-4 gap-4">
@@ -142,6 +148,7 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
               ))}
             </div>
           </div>
+          )}
 
           {/* Equipment */}
           {booking.equipment.length > 0 && (
@@ -188,7 +195,12 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
                       <p className="text-sm font-medium">{sr.description}</p>
                       <p className="text-xs text-text-muted">from {sr.provider}</p>
                     </div>
-                    <p className="text-sm font-semibold text-warning">${sr.cost.toLocaleString()}</p>
+                    <div className="text-right">
+                      <p className="text-sm font-semibold text-warning">${sr.cost.toLocaleString()}</p>
+                      {isV2 && sr.clientPrice != null && (
+                        <p className="text-xs text-text-muted">billed ${sr.clientPrice.toLocaleString()}</p>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -205,7 +217,7 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
 
         <div className="col-span-1">
           <div className="sticky top-8">
-            <PayoutBreakdown payout={payout} rentalFee={booking.rentalFee} deliveryFee={booking.deliveryFee} />
+            <PayoutBreakdown view={view} />
             <SendInvoiceButton
               bookingId={booking.id}
               clientName={booking.client.name}

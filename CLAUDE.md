@@ -18,7 +18,10 @@
 
 ## Key Files
 - `prisma/schema.prisma` — Database models
-- `src/lib/revenue.ts` — Partnership revenue split calculator (50/50 gear/admin per agreement)
+- `src/lib/split.ts` — Current payout structure (payoutVersion 2), pure + unit tested (`npm test`)
+- `src/lib/revenue.ts` — Old 50/50 split, kept only for bookings before Jutes (payoutVersion 1)
+- `src/lib/booking-payout.ts` — Picks v1/v2 for a saved booking; shared by form, booking page, earnings
+- `src/lib/invoice-totals.ts` — Client-facing invoice lines/totals (email, PDF, preview)
 - `src/lib/invoice-pdf.tsx` — PDF invoice template
 - `src/lib/auth.ts` — JWT session management
 - `src/lib/prisma.ts` — Prisma client singleton
@@ -38,6 +41,18 @@
 - DATABASE_URL — Supabase pooled connection (port 6543)
 - DIRECT_URL — Supabase direct connection (port 5432)
 - RESEND_API_KEY — Email sending
+
+## Payout Structure (v2, internal only — clients just see the invoice total)
+Calculated on the rental only; delivery is outside the waterfall.
+1. Rental subtotal = gear + custom items + sub-rentals at client price
+2. Discount is capped so rental never drops below the $100 minimum; under $100 adds a "Minimum order adjustment" line
+3. Gross = rental total − sub-rental costs (providers get their cost; only the markup is split)
+4. Owner's Fee = 15% of gross, split 50/50 Eric/Marko
+5. Referral = 10% of (gross − Owner's Fee), outside referrers only (not Eric/Marko)
+6. Admin = 25% of remainder, one pie: Eric, Marko or Both
+7. Gear = leftover, shared by gear revenue; custom items and sub-rental markup go to Eric/Marko 50/50
+8. Delivery = $50 drop-off + $50 pick-up, each paid to whoever did it; a leg the client handles is left off
+Rounding: integer cents; Owner's Fee and "Both" admin kept even; spare cents go to Gear (largest owner).
 
 ## Date Handling
 - Dates stored at noon UTC (T12:00:00Z) to prevent timezone shift

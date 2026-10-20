@@ -21,6 +21,10 @@ interface BookingData {
   commPartner: string;
   invoicePartner: string;
   accountPartner: string;
+  payoutVersion: number;
+  adminBy: string;
+  dropoffBy: string | null;
+  pickupBy: string | null;
   status: string;
   notes: string | null;
   equipment: {
@@ -181,15 +185,17 @@ function BookingRow({ b }: { b: BookingData }) {
             <div>
               <p className="text-text-muted text-[0.65rem] font-semibold uppercase tracking-[0.18em] mb-2">Admin</p>
               <div className="space-y-1 text-text-secondary">
-                {[
+                {(b.payoutVersion >= 2
+                  ? [{ label: "Done by", value: b.adminBy }]
+                  : [
                   { label: "Lead", value: b.leadPartner },
                   { label: "Communication", value: b.commPartner },
                   { label: "Invoicing", value: b.invoicePartner },
                   { label: "Accounting", value: b.accountPartner },
-                ].map((r) => (
+                ]).map((r) => (
                   <div key={r.label} className="flex justify-between">
                     <span>{r.label}</span>
-                    <span className={r.value === "eric" ? "text-eric font-medium" : "text-marko font-medium"}>
+                    <span className={r.value === "eric" ? "text-eric font-medium" : r.value === "marko" ? "text-marko font-medium" : "font-medium"}>
                       {capitalize(r.value)}
                     </span>
                   </div>
@@ -204,7 +210,13 @@ function BookingRow({ b }: { b: BookingData }) {
                   <p className="text-text-muted text-[0.65rem] font-semibold uppercase tracking-[0.18em] mb-1">Delivery</p>
                   <p className="text-text-secondary">
                     ${b.deliveryFee.toFixed(2)}
-                    {b.deliveryBy && <span className="text-text-muted"> — {capitalize(b.deliveryBy)}</span>}
+                    {b.payoutVersion >= 2 ? (
+                      <span className="text-text-muted">
+                        {" "}— drop-off {b.dropoffBy ? capitalize(b.dropoffBy) : "client"}, pick-up {b.pickupBy ? capitalize(b.pickupBy) : "client"}
+                      </span>
+                    ) : (
+                      b.deliveryBy && <span className="text-text-muted"> — {capitalize(b.deliveryBy)}</span>
+                    )}
                   </p>
                 </div>
               )}
@@ -213,7 +225,7 @@ function BookingRow({ b }: { b: BookingData }) {
                 <div>
                   <p className="text-text-muted text-[0.65rem] font-semibold uppercase tracking-[0.18em] mb-1">Referral</p>
                   <p className="text-text-secondary">
-                    {b.referralName} — {b.referralPercent}% (${b.referralFee.toFixed(2)})
+                    {b.referralName} — {b.payoutVersion >= 2 ? "" : `${b.referralPercent}% `}(${b.referralFee.toFixed(2)})
                   </p>
                 </div>
               )}
