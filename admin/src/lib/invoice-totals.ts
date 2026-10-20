@@ -2,7 +2,7 @@
 // Only the final price is shown to clients — never the internal split.
 
 import { billingDays, splitInputFromBooking, type BookingForPayout } from "./booking-payout";
-import { calculateSplit } from "./split";
+import { calculateSplit, subRentalClientPrice } from "./split";
 
 export interface InvoiceBooking extends Omit<BookingForPayout, "equipment" | "subRentals"> {
   equipment: {
@@ -11,7 +11,7 @@ export interface InvoiceBooking extends Omit<BookingForPayout, "equipment" | "su
     customName: string | null;
     equipment: { owner: string; name: string; manufacturer: string | null; model: string | null } | null;
   }[];
-  subRentals: { provider: string; description: string; cost: number; clientPrice: number | null }[];
+  subRentals: { provider: string; description: string; cost: number }[];
 }
 
 export interface InvoiceItem {
@@ -57,7 +57,7 @@ export function invoiceTotals(b: InvoiceBooking): InvoiceTotals {
         name: sr.description,
         quantity: 1,
         ratePerDay: null,
-        total: sr.clientPrice ?? sr.cost,
+        total: subRentalClientPrice(sr.cost),
       })),
     ];
     const rows: InvoiceTotalRow[] = [{ label: "Subtotal", amount: split.rentalSubtotal }];

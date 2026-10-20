@@ -24,7 +24,7 @@ export interface BookingForPayout {
   dropoffBy: string | null;
   pickupBy: string | null;
   equipment: { quantity: number; rentalPrice: number; equipment: { owner: string } | null }[];
-  subRentals: { provider: string; cost: number; clientPrice: number | null }[];
+  subRentals: { provider: string; cost: number }[];
 }
 
 export interface PartnerTotals {
@@ -59,11 +59,7 @@ export function splitInputFromBooking(b: BookingForPayout): SplitInput {
       owner: be.equipment?.owner ?? null,
       amount: be.rentalPrice * be.quantity * days,
     })),
-    subRentals: b.subRentals.map((sr) => ({
-      provider: sr.provider,
-      cost: sr.cost,
-      clientPrice: sr.clientPrice ?? sr.cost,
-    })),
+    subRentals: b.subRentals.map((sr) => ({ provider: sr.provider, cost: sr.cost })),
     discountType: b.discountType === "percent" ? "percent" : "amount",
     discountValue: b.discountValue,
     referralName: b.referralName,

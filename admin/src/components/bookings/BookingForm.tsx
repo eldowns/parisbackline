@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { calculatePayout } from "@/lib/revenue";
-import { calculateSplit, MINIMUM_ORDER } from "@/lib/split";
+import { calculateSplit, MINIMUM_ORDER, SUB_RENTAL_MARKUP, subRentalClientPrice } from "@/lib/split";
 import { viewFromLegacy, viewFromSplit } from "@/lib/booking-payout";
 import PayoutBreakdown from "./PayoutBreakdown";
 import SendInvoiceButton from "./SendInvoiceButton";
@@ -30,7 +30,6 @@ interface SubRentalEntry {
   provider: string;
   description: string;
   cost: number;
-  clientPrice?: number;
 }
 
 interface BookingData {
@@ -171,7 +170,7 @@ export default function BookingForm({
 
   // Sub-rentals
   function addSubRental() {
-    update({ subRentals: [...form.subRentals, { provider: "", description: "", cost: 0, clientPrice: 0 }] });
+    update({ subRentals: [...form.subRentals, { provider: "", description: "", cost: 0 }] });
   }
 
   function updateSubRental(idx: number, fields: Partial<SubRentalEntry>) {
@@ -207,7 +206,7 @@ export default function BookingForm({
         })),
         subRentals: form.subRentals
           .filter((s) => s.provider)
-          .map((s) => ({ provider: s.provider, cost: s.cost, clientPrice: s.clientPrice ?? s.cost })),
+          .map((s) => ({ provider: s.provider, cost: s.cost })),
         discountType: form.discountType,
         discountValue: form.discountValue,
         referralName: form.referralName,
@@ -278,6 +277,7 @@ export default function BookingForm({
           ...(isV2
             ? {
                 payoutVersion: 2,
+                subRentals: form.subRentals.map((s) => ({ ...s, clientPrice: subRentalClientPrice(s.cost) })),
                 rentalFee: split.rentalTotal,
                 minimumAdjustment: split.minimumAdjustment,
                 deliveryFee: split.deliveryTotal,
@@ -537,8 +537,8 @@ export default function BookingForm({
               </div>
               {isV2 && (
                 <div>
-                  <label className={labelClass}>Client Price ($)</label>
-                  <input type="number" step="0.01" value={sr.clientPrice || ""} onChange={(e) => updateSubRental(idx, { clientPrice: parseFloat(e.target.value) || 0 })} className="w-full" />
+                  <label className={labelClass}>Client Price (+{SUB_RENTAL_MARKUP}%)</label>
+                  <p className="text-sm font-semibold text-text-primary py-2">${subRentalClientPrice(sr.cost).toFixed(2)}</p>
                 </div>
               )}
               <button type="button" onClick={() => removeSubRental(idx)} className="text-danger hover:text-danger/70 text-xs font-medium pb-2 cursor-pointer">

@@ -47,15 +47,15 @@ describe("invoiceTotals — new structure", () => {
     expect(t.grandTotal).toBe(200);
   });
 
-  it("bills sub-rentals at the client price without naming the provider", () => {
+  it("bills sub-rentals at cost + 15% without naming the provider", () => {
     const t = invoiceTotals(
       booking({
         equipment: [gear(80)],
-        subRentals: [{ provider: "SIR", description: "Midas M32", cost: 200, clientPrice: 250 }],
+        subRentals: [{ provider: "SIR", description: "Midas M32", cost: 200 }],
       })
     );
-    expect(t.items[1]).toEqual({ name: "Midas M32", quantity: 1, ratePerDay: null, total: 250 });
-    expect(t.grandTotal).toBe(330);
+    expect(t.items[1]).toEqual({ name: "Midas M32", quantity: 1, ratePerDay: null, total: 230 });
+    expect(t.grandTotal).toBe(310);
   });
 
   it("Jutes: $2400 rental, no delivery", () => {
@@ -72,7 +72,7 @@ describe("invoiceTotals — old structure is unchanged", () => {
       booking({
         payoutVersion: 1,
         equipment: [gear(50)],
-        subRentals: [{ provider: "SIR", description: "Console", cost: 200, clientPrice: null }],
+        subRentals: [{ provider: "SIR", description: "Console", cost: 200 }],
         discountType: "percent",
         discountValue: 10,
         deliveryFee: 65,

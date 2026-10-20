@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { format } from "date-fns";
 import Link from "next/link";
 import { payoutViewForBooking } from "@/lib/booking-payout";
+import { subRentalClientPrice } from "@/lib/split";
 import PayoutBreakdown from "@/components/bookings/PayoutBreakdown";
 import DeleteBookingButton from "@/components/bookings/DeleteBookingButton";
 import SendInvoiceButton from "@/components/bookings/SendInvoiceButton";
@@ -197,8 +198,8 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-semibold text-warning">${sr.cost.toLocaleString()}</p>
-                      {isV2 && sr.clientPrice != null && (
-                        <p className="text-xs text-text-muted">billed ${sr.clientPrice.toLocaleString()}</p>
+                      {isV2 && (
+                        <p className="text-xs text-text-muted">billed ${subRentalClientPrice(sr.cost).toFixed(2)}</p>
                       )}
                     </div>
                   </div>

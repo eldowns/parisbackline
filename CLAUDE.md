@@ -44,7 +44,7 @@
 
 ## Payout Structure (v2, internal only — clients just see the invoice total)
 Calculated on the rental only; delivery is outside the waterfall.
-1. Rental subtotal = gear + custom items + sub-rentals at client price
+1. Rental subtotal = gear + custom items + sub-rentals (we enter our cost; client is billed cost + 15%)
 2. Discount is capped so rental never drops below the $100 minimum; under $100 adds a "Minimum order adjustment" line
 3. Gross = rental total − sub-rental costs (providers get their cost; only the markup is split)
 4. Owner's Fee = 15% of gross, split 50/50 Eric/Marko

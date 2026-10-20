@@ -52,7 +52,6 @@ export default async function EditBookingPage({ params }: { params: Promise<{ id
       provider: sr.provider,
       description: sr.description,
       cost: sr.cost,
-      clientPrice: sr.clientPrice ?? sr.cost,
     })),
   };
 
