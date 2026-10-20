@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateSplit, type SplitInput } from "./split";
+import { calculateSplit, subRentalClientPrice, type SplitInput } from "./split";
 
 function rental(amount: number, opts: Partial<SplitInput> = {}): SplitInput {
   return { items: [{ owner: "eric", amount }], adminBy: "eric", ...opts };
@@ -140,19 +140,35 @@ describe("gear distribution", () => {
 });
 
 describe("sub-rentals", () => {
+  it("bills the client our cost + 15%", () => {
+    expect(subRentalClientPrice(200)).toBe(230);
+    expect(subRentalClientPrice(1000)).toBe(1150);
+    expect(subRentalClientPrice(123.45)).toBe(141.97);
+  });
+
   it("passes the cost to the provider and splits only the markup", () => {
     const r = calculateSplit({
       items: [{ owner: "eric", amount: 80 }],
-      subRentals: [{ provider: "SIR", cost: 200, clientPrice: 250 }],
+      subRentals: [{ provider: "SIR", cost: 200 }],
       adminBy: "eric",
     });
-    expect(r.rentalTotal).toBe(330);
+    expect(r.rentalTotal).toBe(310);
     expect(r.minimumAdjustment).toBe(0);
-    expect(r.gross).toBe(130);
-    expect(r.ownersFee).toBe(19.5);
-    expect(r.adminSide).toBe(27.63);
-    expect(r.gearSide).toBe(82.87);
+    expect(r.gross).toBe(110);
+    expect(r.ownersFee).toBe(16.5);
+    expect(r.adminSide).toBe(23.38);
+    expect(r.gearSide).toBe(70.12);
     expect(r.payouts.SIR.subRental).toBe(200);
+  });
+
+  it("a sub-rental alone: the 15% markup is what gets split", () => {
+    const r = calculateSplit({ items: [], subRentals: [{ provider: "SIR", cost: 1000 }], adminBy: "marko" });
+    expect(r.rentalTotal).toBe(1150);
+    expect(r.gross).toBe(150);
+    expect(r.ownersFee).toBe(22.5);
+    expect(r.adminSide).toBe(31.88);
+    expect(r.gearSide).toBe(95.62);
+    expect(r.payouts.SIR.subRental).toBe(1000);
   });
 });
 
@@ -178,7 +194,7 @@ describe("rounding", () => {
         { owner: "Dario", amount: 222.22 },
         { owner: null, amount: 77.77 },
       ],
-      subRentals: [{ provider: "SIR", cost: 123.45, clientPrice: 160 }],
+      subRentals: [{ provider: "SIR", cost: 123.45 }],
       discountType: "percent",
       discountValue: 7,
       referralName: "Sam",

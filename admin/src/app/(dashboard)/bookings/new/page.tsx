@@ -59,7 +59,6 @@ export default async function NewBookingPage({
           provider: sr.provider,
           description: sr.description,
           cost: sr.cost,
-          clientPrice: sr.clientPrice ?? sr.cost,
         })),
       }
     : undefined;

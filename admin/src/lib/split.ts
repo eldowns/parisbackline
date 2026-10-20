@@ -7,6 +7,7 @@ export const OWNERS_FEE_RATE = 15; // % of gross
 export const REFERRAL_RATE = 10; // % of (gross − Owner's Fee)
 export const ADMIN_RATE = 25; // % of remainder
 export const DELIVERY_LEG_FEE = 50;
+export const SUB_RENTAL_MARKUP = 15; // % added to our cost to get the client price
 export const PARTNERS = ["eric", "marko"] as const;
 
 // Gear revenue with no owner (custom items, sub-rental markup) — split between the partners
@@ -19,8 +20,7 @@ export interface SplitLineItem {
 
 export interface SplitSubRental {
   provider: string;
-  cost: number; // what the provider charges us
-  clientPrice: number; // what the client is billed
+  cost: number; // what the provider charges us; the client is billed cost + 15%
 }
 
 export interface SplitInput {
@@ -76,6 +76,12 @@ const cents = (dollars: number) => Math.round((dollars || 0) * 100);
 const dollars = (c: number) => c / 100;
 const pct = (c: number, rate: number) => Math.round((c * rate) / 100);
 const evenDown = (c: number) => c - (c % 2);
+const markupCents = (costCents: number) => costCents + pct(costCents, SUB_RENTAL_MARKUP);
+
+// What the client is billed for a sub-rental: our cost + 15%, to the cent
+export function subRentalClientPrice(cost: number): number {
+  return dollars(markupCents(cents(cost)));
+}
 
 export function normalizePerson(name: string | null | undefined): string | null {
   const trimmed = (name || "").trim();
@@ -97,9 +103,9 @@ function emptyPayout(): Record<string, number> {
 export function calculateSplit(input: SplitInput): SplitResult {
   const subRentals = input.subRentals || [];
 
-  // 1. Rental subtotal: own gear + custom items + sub-rentals at client price
+  // 1. Rental subtotal: own gear + custom items + sub-rentals at client price (cost + 15%)
   const itemCents = input.items.map((i) => ({ owner: i.owner, amount: cents(i.amount) }));
-  const subCents = subRentals.map((s) => ({ provider: s.provider, cost: cents(s.cost), clientPrice: cents(s.clientPrice) }));
+  const subCents = subRentals.map((s) => ({ provider: s.provider, cost: cents(s.cost), clientPrice: markupCents(cents(s.cost)) }));
   const subtotal =
     itemCents.reduce((s, i) => s + i.amount, 0) + subCents.reduce((s, sr) => s + sr.clientPrice, 0);
 
