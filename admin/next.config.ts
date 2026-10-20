@@ -7,6 +7,13 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  async redirects() {
+    // The redesign previewed at /alternate before replacing the homepage.
+    return [
+      { source: "/alternate", destination: "/", permanent: true },
+      { source: "/alternate/catalog", destination: "/catalog", permanent: true },
+    ];
+  },
 };
 
 export default nextConfig;
