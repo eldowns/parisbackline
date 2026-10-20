@@ -3,12 +3,14 @@
 import { useState } from "react";
 import Sidebar from "@/components/layout/Sidebar";
 import { ToastProvider } from "@/components/ui/Toast";
+import LegacyFonts from "@/components/ui/LegacyFonts";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <ToastProvider>
+      <LegacyFonts />
       <div className="flex min-h-screen">
         {/* Mobile overlay */}
         {sidebarOpen && (
